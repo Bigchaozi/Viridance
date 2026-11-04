@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" role="img" aria-labelledby="title">
+  <title id="title">Preview QR code</title>
+  <rect width="29" height="29" rx="1" fill="#fff"/>
+  <g fill="#14231c">
+    <path d="M2 2h7v7H2zm2 2v3h3V4zM20 2h7v7h-7zm2 2v3h3V4zM2 20h7v7H2zm2 2v3h3v-3z" fill-rule="evenodd"/>
+    <path d="M11 2h2v2h-2zM15 2h3v2h-3zM11 5h2v3h-2zM14 5h2v2h-2zM17 6h2v3h-2zM10 10h3v2h-3zM14 9h2v3h-2zM18 10h3v2h-3zM22 10h2v3h-2zM25 11h2v2h-2zM2 11h2v3H2zM5 10h3v2H5zM7 13h3v2H7zM11 13h2v3h-2zM14 13h4v2h-4zM19 14h2v3h-2zM22 14h5v2h-5zM2 16h3v2H2zM6 17h3v2H6zM10 17h2v4h-2zM13 16h3v2h-3zM16 18h2v3h-2zM19 18h3v2h-3zM23 17h2v3h-2zM26 18h1v3h-1zM11 22h3v2h-3zM15 21h2v3h-2zM18 22h2v2h-2zM21 21h3v2h-3zM25 22h2v5h-2zM10 25h2v2h-2zM13 25h4v2h-4zM18 25h3v2h-3zM22 24h2v3h-2z"/>
+  </g>
+</svg>
