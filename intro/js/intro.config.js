@@ -7,8 +7,13 @@ window.VIRIDANCE_INTRO_CONFIG = {
   /** 总开关 */
   enabled: true,
 
-  /** 首访判定：'local' = 跨会话只播一次；'session' = 每个浏览器会话播一次 */
-  storage: 'local',
+  /**
+   * 首访判定：
+   * 'local'   = 跨会话只播一次；
+   * 'session' = 每个浏览器会话播一次；
+   * 'none'    = 不记忆，每次刷新首页都播放（当前设置）
+   */
+  storage: 'none',
   storageKey: 'viridance:intro-played',
 
   /**

@@ -4,7 +4,7 @@
  * 职责：开场结束（或被跳过）后的收场——
  *  - 整层按 sequence.fadeOut（默认 0.5s）淡出，揭示已就位的首页 Hero
  *    （Hero 与透明导航自始就在 DOM 中，不闪跳、不二次加载）
- *  - 写入"已播放"标记（后续路由/刷新不再播放）
+ *  - 写入"已播放"标记（storage: 'none' 时跳过，刷新首页即重播）
  *  - 释放滚动锁定与焦点，广播 intro:complete 事件
  */
 (function () {
@@ -18,8 +18,9 @@
       this.cfg = cfg;
     }
 
-    /** 写入首访标记（跳过与播完都算"已看"） */
+    /** 写入首访标记（跳过与播完都算"已看"）；storage:'none' 时不记忆，每次刷新都播 */
     markPlayed() {
+      if (this.cfg.storage === 'none') return;
       try {
         const store = this.cfg.storage === 'session' ? sessionStorage : localStorage;
         store.setItem(this.cfg.storageKey, '1');

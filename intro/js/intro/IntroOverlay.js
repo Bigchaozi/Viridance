@@ -41,8 +41,10 @@
       if (window.__GSAP_FAILED__ || typeof window.gsap === 'undefined') return false;
 
       try {
-        const store = this.cfg.storage === 'session' ? sessionStorage : localStorage;
-        if (store.getItem(this.cfg.storageKey) === '1') return false;
+        if (this.cfg.storage !== 'none') {
+          const store = this.cfg.storage === 'session' ? sessionStorage : localStorage;
+          if (store.getItem(this.cfg.storageKey) === '1') return false;
+        }
       } catch (_) { /* 隐私模式等：按"未播放"处理，失败时写入被吞掉即可 */ }
 
       return true;

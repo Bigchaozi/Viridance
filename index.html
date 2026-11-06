@@ -564,6 +564,145 @@ html{scroll-behavior:smooth;}
 <link rel="stylesheet" href="assets/uz-reference-pages.css?v=20261106-3">
 <link rel="stylesheet" href="assets/home-commitment-contact.css?v=20261106-1">
 <link rel="stylesheet" href="intro/css/intro.css?v=20261106-1">
+<style id="about-hero-editorial-layout">
+/* 2026-11-06 · About hero 排版对齐参考稿：
+   面包屑置顶 → 左上大标题 → 底部左侧窄栏正文（上下留大空白）→ 右下滚动提示。 */
+.vd #p2 > .inner-hero.inner-hero--about{
+  display:block;
+}
+.vd #p2 > .inner-hero.inner-hero--about .inner-hero__content{
+  --gut:clamp(24px,9vw,160px);
+  width:auto;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  padding-left:clamp(24px,9vw,160px)!important;
+  padding-right:clamp(24px,9vw,160px)!important;
+  padding-top:clamp(100px,12.5vh,146px);
+  padding-bottom:clamp(60px,8vh,104px);
+}
+
+/* 面包屑 */
+.vd #p2 .about-reference-hero__breadcrumbs{
+  margin-bottom:clamp(18px,3vh,38px);
+  gap:11px;
+  font-size:13px;
+  letter-spacing:.01em;
+  color:rgba(255,255,255,.72);
+}
+.vd #p2 .about-reference-hero__breadcrumbs a{color:rgba(255,255,255,.72);text-decoration:none;font-size:inherit;}
+.vd #p2 .about-reference-hero__breadcrumbs a:hover{color:#fff;}
+.vd #p2 .about-reference-hero__breadcrumbs span{width:6px;height:6px;flex:0 0 auto;}
+.vd #p2 .about-reference-hero__breadcrumbs strong{color:#fff;font-weight:500;letter-spacing:inherit;}
+
+/* 标题 + 正文竖向分布：标题贴顶，正文压到底部 */
+.vd #p2 > .inner-hero.inner-hero--about .inner-hero__content > h1{
+  max-width:none;
+  font-size:clamp(62px,7.2vw,112px);
+  font-weight:400;
+  line-height:.98;
+  letter-spacing:-.045em;
+  text-shadow:0 18px 46px rgba(0,0,0,.22);
+}
+.vd #p2 > .inner-hero.inner-hero--about .inner-hero__content > .lead{
+  margin:auto 0 0;
+  padding-top:clamp(40px,10vh,120px);
+  max-width:min(100%,54ch);
+  font-size:clamp(16px,1.3vw,18.5px);
+  line-height:1.6;
+  color:rgba(255,255,255,.9);
+  text-shadow:0 1px 18px rgba(0,0,0,.28);
+}
+
+/* 右下滚动提示 */
+.vd #p2 .about-hero-cue{
+  position:absolute;
+  z-index:4;
+  right:clamp(20px,4.4vw,68px);
+  bottom:clamp(58px,8.5vh,100px);
+  display:flex;
+  align-items:flex-end;
+  gap:16px;
+  padding:0;
+  color:#fff;
+  font-size:12.5px;
+  line-height:1.5;
+  letter-spacing:.01em;
+  text-align:right;
+  text-decoration:none;
+}
+.vd #p2 .about-hero-cue__text{opacity:.86;text-shadow:0 1px 14px rgba(0,0,0,.4);}
+.vd #p2 .about-hero-cue__arrow{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  margin:-10px -10px -10px 0;
+  color:#C2EFAF;
+  font-size:15px;
+  line-height:1;
+  transition:transform .3s cubic-bezier(.25,.46,.45,.94),color .3s ease;
+}
+.vd #p2 .about-hero-cue:hover .about-hero-cue__arrow{transform:translateY(5px);color:#fff;}
+.vd #p2 .about-hero-cue:focus-visible{outline:2px solid #C2EFAF;outline-offset:6px;border-radius:3px;}
+
+/* 图注挪到左下角，避开右下提示 */
+.vd #p2 .about-reference-hero__disclosure{
+  left:clamp(20px,4.4vw,68px);
+  right:auto;
+  bottom:22px;
+  color:rgba(255,255,255,.42);
+}
+
+/* 窄屏：还原为正常上下流式排布 */
+@media(max-width:991px){
+  .vd #p2 > .inner-hero.inner-hero--about{min-height:0;}
+  .vd #p2 > .inner-hero.inner-hero--about .inner-hero__content{
+    min-height:0;
+    padding-left:clamp(20px,5vw,48px)!important;
+    padding-right:clamp(20px,5vw,48px)!important;
+    padding-top:96px;
+    padding-bottom:56px;
+  }
+  .vd #p2 > .inner-hero.inner-hero--about .inner-hero__content > h1{
+    font-size:clamp(46px,11vw,74px);
+    line-height:1.02;
+  }
+  .vd #p2 > .inner-hero.inner-hero--about .inner-hero__content > .lead{
+    margin:clamp(26px,6vw,44px) 0 0;
+    padding-top:0;
+    max-width:min(100%,62ch);
+    font-size:15px;
+    line-height:1.62;
+  }
+  .vd #p2 .about-hero-cue{
+    position:static;
+    margin-top:28px;
+    align-items:center;
+    gap:8px;
+    text-align:left;
+  }
+  .vd #p2 .about-hero-cue__arrow{margin:-10px 0 -10px -10px;}
+  .vd #p2 .about-reference-hero__disclosure{
+    position:static!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin:14px 0 0!important;
+    padding-inline:clamp(20px,5vw,48px);
+    padding-bottom:18px;
+    max-width:min(100%,300px);
+    font-size:9px;
+    letter-spacing:.04em;
+    line-height:1.5;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    text-align:left;
+    opacity:.75;
+  }
+}
+</style>
 </head>
 <body class="vd pg-home" data-page-node-id="43fHPVRyltRuhpjwa55u8U" style="">
 <svg class="aurora-filter-defs" aria-hidden="true" focusable="false" width="0" height="0">
@@ -872,9 +1011,16 @@ html{scroll-behavior:smooth;}
       </div>
         <img class="about-reference-hero__image" src="assets/images/about-restored-mining-landscape.png" alt="Conceptual panoramic landscape showing an open-pit mine alongside restored vegetation and water features">
       <div class="container inner-hero__content">
-        <div class="immersive-focus"><h1 id="about-title">About Us</h1>
-        <p class="lead">Viridance specializes in mine ecological restoration and environmental governance. We deliver full-lifecycle environmental solutions for mining clients, including EIA compliance consultation, engineering design, ecological construction, on-site environmental management, closure monitoring and environmental equipment supply. We tailor solutions to local site conditions and integrate design, construction, equipment and long-term maintenance. Starting from Zimbabwe, we serve the African market to support responsible mining and sustainable land rehabilitation.</p></div>
+        <nav class="about-reference-hero__breadcrumbs" aria-label="Breadcrumb">
+          <a href="#home" data-route="home">Home</a><span aria-hidden="true"></span><strong aria-current="page">About</strong>
+        </nav>
+        <h1 id="about-title">About Us</h1>
+        <p class="lead">Viridance specializes in mine ecological restoration and environmental governance. We deliver full-lifecycle environmental solutions for mining clients, including EIA compliance consultation, engineering design, ecological construction, on-site environmental management, closure monitoring and environmental equipment supply. We tailor solutions to local site conditions and integrate design, construction, equipment and long-term maintenance. Starting from Zimbabwe, we serve the African market to support responsible mining and sustainable land rehabilitation.</p>
       </div>
+      <a class="about-hero-cue" href="#about-culture" data-scroll-to="#about-culture">
+        <span class="about-hero-cue__text">Discover the full potential<br>of our company.</span>
+        <span class="about-hero-cue__arrow" aria-hidden="true">↓</span>
+      </a>
       <p class="about-reference-hero__disclosure">Reference image · design preview · publication rights to be confirmed.</p>
     </section>
     <nav class="about-tabs" aria-label="About page sections"><div class="container about-tabs__inner"><a href="#about-culture">Corporate Culture</a><a href="#about-history">Development History</a><a href="#about-team">Leadership Team</a><a href="#about-services">Our Services</a></div></nav>
@@ -930,8 +1076,6 @@ html{scroll-behavior:smooth;}
           <div class="about-member-flip"><span class="about-member-photo portrait-6" aria-hidden="true"></span><div class="about-member-back"><strong class="about-member-back__title">Experience and Qualifications:</strong><ul><li>Stakeholder &amp; Community Lead · sample profile placeholder</li><li>Biography and career history to be supplied by the client.</li><li>Replace all sample details before publication.</li></ul></div></div>
           <div class="about-member-meta"><strong>Rudo Mavhunga</strong><small>Stakeholder &amp; Community Lead · Sample</small></div>
         </article>
-        <article class="about-member-card is-reserved"><span class="about-member-photo">Reserved</span><strong>+ Add Member</strong><small>Editable in CMS</small></article>
-        <article class="about-member-card is-reserved"><span class="about-member-photo">Reserved</span><strong>+ Add Member</strong><small>Editable in CMS</small></article>
       </div></div>
     </section>
 
@@ -3237,4 +3381,35 @@ html{scroll-behavior:smooth;}
 })();
 </script>
 <script src="assets/uz-reference-pages.js"></script>
+<style id="responsive-gutter-fix">
+/* 后置的 .vd{--gut:160px} 覆盖掉了原本的响应式边距，窄屏下内容被压成细条。
+   这里只在 ≤1100px 恢复设计稿定义的间距，桌面端（>1100px）保持原样。 */
+@media(max-width:1100px){
+  .vd{--gut:64px;--gut-std:64px;}
+  /* 兜底：某些导出块把容器左右内边距写死成大屏值，这里显式压回到窄屏安全区 */
+  .vd .container{padding-left:clamp(24px,5vw,64px)!important;padding-right:clamp(24px,5vw,64px)!important;}
+}
+@media(max-width:760px){
+  .vd{--gut:24px;--gut-std:24px;}
+  .vd .container{padding-left:24px!important;padding-right:24px!important;}
+}
+</style>
+<script>
+/* About hero 右下滚动提示：直接滚动到锚点，不走 hash 路由，避免被 fromHash 判成未知页面。 */
+(function(){
+  'use strict';
+  document.addEventListener('click',function(event){
+    var cue=event.target.closest?event.target.closest('[data-scroll-to]'):null;
+    if(!cue){return;}
+    var target=document.querySelector(cue.getAttribute('data-scroll-to'));
+    if(!target){return;}
+    event.preventDefault();
+    var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var top=target.getBoundingClientRect().top+window.pageYOffset-74;
+    window.scrollTo({top:top,behavior:reduced?'auto':'smooth'});
+    if(!target.hasAttribute('tabindex')){target.setAttribute('tabindex','-1');}
+    target.focus({preventScroll:true});
+  });
+})();
+</script>
 </body></html>
