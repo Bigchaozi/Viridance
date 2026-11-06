@@ -1,0 +1,263 @@
+/* ==========================================================================
+   Viridance Intro — 开场动画样式（白底版）
+   主题色集中在 .intro-root 的变量里：换白/深只需改 --intro-* 三个值。
+   原则：只让 JS 动画 transform / opacity / clip-path；
+         CSS 本身不跑循环动画，不产生闪烁。
+   ========================================================================== */
+
+.intro-root {
+  /* 白底主题令牌 */
+  --intro-ink: #17251F;                        /* 深森林绿（主文字） */
+  --intro-muted: rgba(23, 37, 31, 0.72);       /* 次级文字 */
+  --intro-hairline: rgba(23, 37, 31, 0.18);    /* 描边 */
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #FFFFFF;                 /* 白底（由 config.sequence.background 控制） */
+  color: var(--intro-ink);
+  will-change: opacity;
+  overflow: hidden;
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, "PingFang SC",
+               "Microsoft YaHei", Arial, sans-serif;
+}
+
+/* 滚动锁定 */
+html.intro-locked, body.intro-locked {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* 内容层撑满视口，保证舞台垂直居中 */
+.intro-content {
+  position: relative;      /* 水印定位基准 */
+  height: 100%;
+}
+
+/* --------------------------------------------------------------------------
+ * 背景水印：超大极浅品牌字，铺满 84% 视宽，Logo 落在它正中
+ * 静态层，只有 opacity 由 JS 驱动（第一拍前 0.3s 淡入，末拍随 Logo 一起消散）
+ * -------------------------------------------------------------------------- */
+.intro-watermark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  transform: translate(-50%, -50%);
+  font-size: 15.7vw;                 /* 约铺满 84% 视宽，两端留出呼吸 */
+  line-height: 0.82;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(23, 37, 31, 0.055);    /* 近黑 5.5% → 白底上的极浅灰 */
+  pointer-events: none;
+  user-select: none;
+  will-change: opacity, transform, filter;
+}
+
+/* --------------------------------------------------------------------------
+ * 舞台：所有拍绝对定位堆叠在同一中心点，一次只亮一拍
+ * -------------------------------------------------------------------------- */
+.intro-stage {
+  position: relative;
+  z-index: 1;              /* 所有拍都压在水印之上 */
+  height: 100%;
+}
+
+.intro-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  text-align: center;
+  opacity: 0;                /* 由 IntroTimeline 驱动 */
+  will-change: opacity;
+}
+
+/* 入场遮罩：裁住文字，配合 GSAP yPercent 实现"从底部向上推出" */
+.intro-beat__mask {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 100%;
+  /* 上下各留 0.18em 内边距，避免升部/降部字母被遮罩切掉，同时不露出推出起点 */
+  padding: 0.18em 0.15em;
+  margin: -0.18em -0.15em;
+}
+
+/* 文字拍：三层堆叠（基色 + 色罩层 + 亮芯层），扫光用 clip-path 窗口移动 */
+.intro-beat__stack {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  will-change: transform;    /* 入场推出 / 出场上浮由 GSAP 驱动 */
+}
+.intro-beat__stack--logo { display: inline-block; }
+.intro-beat__text {
+  display: inline-block;
+}
+.intro-beat__text--base { position: relative; }
+.intro-beat__text--tint,
+.intro-beat__text--sheen {
+  position: absolute;
+  inset: 0;
+  color: transparent !important;
+  -webkit-background-clip: text;
+  background-clip: text;
+  pointer-events: none;
+}
+/* 色罩：低饱和矿土绿赭渐变，入场时覆盖文字、0.9s 内淡出 →
+   白底上呈现"彩色 → 深林绿"的落定过程 */
+.intro-beat__text--tint {
+  background-image: linear-gradient(105deg,
+    #4F7F65 0%,
+    #A44F2A 52%,
+    #2F5D46 100%);
+  opacity: 0.8;
+}
+/* 扫光亮芯：一道纯白高光掠过深色字面（白底上即"反光"效果） */
+.intro-beat__text--sheen-core {
+  background-image: linear-gradient(105deg,
+    rgba(255, 255, 255, 0) 32%,
+    rgba(255, 255, 255, 0.92) 50%,
+    rgba(255, 255, 255, 0) 68%);
+}
+
+/* 备用类型 word：品牌字标（超大、小写，参考片 "Gemini" 的量级）；当前序列未使用 */
+.intro-beat--word .intro-beat__text {
+  font-size: clamp(52px, 10vw, 128px);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--intro-ink);
+  line-height: 1.1;
+}
+
+/* 使命文案（大写、宽字距、单行展示）：字号用 vw 按视口宽度等比缩放，
+   保证最长一句（48 字符）在任何断点都完整落在一行内不换行、不溢出 */
+.intro-beat--line .intro-beat__text {
+  font-size: clamp(9px, 1.9vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  white-space: nowrap;
+  color: var(--intro-ink);   /* 白底上用主墨色，对齐参考片的深底高对比观感 */
+}
+
+/* 末拍：Logo（plate: false 直接落在舞台底色上；plate: true 时套白色承托区） */
+.intro-beat--logo { gap: 0; }
+.intro-logo {
+  display: block;
+  /* 横向锁定组合（约 2.85:1）：宽度驱动、高度自适应，任何断点都不裁切不拉伸 */
+  width: min(44vw, 280px);
+  height: auto;
+  object-fit: contain;
+  will-change: opacity, transform, filter;   /* 出场烟雾消散：blur + 上浮 + 放大 */
+}
+.intro-plate {
+  margin: 0;
+  background: #FFFFFF;
+  padding: clamp(26px, 4.5vw, 48px) clamp(40px, 7vw, 92px);
+  border-radius: 2px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* Logo 缺失时的占位字标（替换正式 Logo 后不会出现） */
+.intro-logo-fallback { display: none; text-align: center; color: var(--intro-ink); }
+.intro-logo-fallback__word {
+  display: block;
+  font-size: clamp(22px, 3.4vw, 34px);
+  letter-spacing: 0.22em;
+  font-weight: 600;
+}
+.intro-logo-fallback__sub {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(23, 37, 31, 0.55);
+}
+.intro-plate .intro-logo-fallback { color: #17251F; }
+.intro-plate .intro-logo-fallback__sub { color: #5C6B62; }
+
+/* --------------------------------------------------------------------------
+ * Skip 入口（按设计系统按钮规格）：
+ *   高 40px / 14px Inter / 文字 #0B1410 / 底色 #90E967 / padding 0 20px
+ * 视觉高度 40px，但用伪元素把命中区外扩到 44px，兼顾规格与可访问性
+ * -------------------------------------------------------------------------- */
+.intro-skip {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(28px, 6vh, 56px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;                    /* 参考按钮实测高度 */
+  min-width: 44px;
+  padding: 0 20px;                 /* 参考按钮 padding: 0 20px */
+  font-family: Inter, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;                 /* 参考按钮 14px */
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0B1410;                  /* 参考按钮文字色（对比度 12.51:1） */
+  background: #90E967;             /* 参考按钮底色 */
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  will-change: opacity;
+  transition: background-color 150ms ease;
+}
+/* 命中区外扩到 44px（视觉仍是 40px 高） */
+.intro-skip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -2px;
+  bottom: -2px;
+}
+.intro-skip:hover { background: #7EDC50; }
+/* 键盘聚焦：不画描边，只用底色加深提示（保持"无外框"的外观） */
+.intro-skip:focus-visible { background: #7EDC50; outline: none; }
+
+/* --------------------------------------------------------------------------
+ * 静态版（prefers-reduced-motion / 降级）：只显示 Logo 拍，隐藏扫光层
+ * -------------------------------------------------------------------------- */
+.intro-root--static .intro-beat { opacity: 0 !important; }
+.intro-root--static .intro-beat--logo { opacity: 1 !important; }
+.intro-root--static .intro-beat__text--sheen,
+.intro-root--static .intro-beat__text--tint { display: none; }
+.intro-root--static .intro-beat__stack { transform: none !important; }
+.intro-root--static .intro-skip { opacity: 1 !important; }
+
+/* --------------------------------------------------------------------------
+ * 移动端：字标缩小、文案字距收紧，其余保持
+ * -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .intro-beat--word .intro-beat__text { font-size: clamp(44px, 14vw, 72px); }
+  .intro-beat--line .intro-beat__text {
+    /* 窄屏按 vw 等比缩小并收紧字距：最长 48 字符在 320px 宽也能单行放得下 */
+    font-size: clamp(7px, 2.1vw, 13px);
+    letter-spacing: 0.14em;
+  }
+  .intro-logo { width: min(60vw, 210px); }
+  .intro-plate { padding: 20px 26px; }
+}
+
+/* --------------------------------------------------------------------------
+ * prefers-reduced-motion：静态呈现（配合 HeroHandoff.revealStatic）
+ * -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .intro-beat__text--sheen,
+  .intro-beat__text--tint { display: none; }
+  .intro-beat { opacity: 0; }
+  .intro-beat--logo { opacity: 1; }
+  .intro-beat__stack { transform: none !important; }
+  .intro-skip { opacity: 1 !important; }
+}
