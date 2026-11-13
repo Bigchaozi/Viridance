@@ -1,0 +1,29 @@
+.liquid-preview__wash { inset:0; overflow:hidden; background:#fff }
+.liquid-preview__color { position:absolute; inset:-45%; }
+.liquid-preview__color--sage {
+  background:radial-gradient(ellipse 18% 22% at 34% 40%,#d3f5be 0%,#d3f5be 29%,#ebfbe1 70%,#ebfbe100 100%);
+animation:liquid-sage 16s cubic-bezier(.42,0,.58,1) infinite;
+}
+.liquid-preview__color--mint {
+  background:radial-gradient(ellipse 16% 20% at 62% 58%,#dbf6cc 0%,#dbf6cc 29%,#effce8 70%,#effce800 100%);
+animation:liquid-mint 16s cubic-bezier(.42,0,.58,1) infinite;
+}
+.liquid-preview__wash::after {
+content:""; position:absolute; inset:0;
+background:radial-gradient(ellipse 38% 56% at 50% 48%,#fff 22%,#fffffff5 45%,#fff0 100%);
+pointer-events:none;
+}
+@keyframes liquid-sage {
+0%,100% { transform:translate(-13%,-6%) rotate(-12deg) }
+25% { transform:translate(14%,-17%) rotate(4deg) }
+50% { transform:translate(28%,12%) rotate(16deg) }
+75% { transform:translate(4%,20%) rotate(4deg) }
+}
+@keyframes liquid-mint {
+0%,100% { transform:translate(14%,14%) rotate(10deg) }
+25% { transform:translate(-17%,14%) rotate(-6deg) }
+50% { transform:translate(-27%,-10%) rotate(-18deg) }
+75% { transform:translate(2%,-19%) rotate(-2deg) }
+}
+.liquid-preview__toggle { position:absolute; right:24px; bottom:24px; min-height:44px; padding:0 18px; color:#14231c; border:1px solid #c4dbd7; background:#fffffff2; border-radius:999px; font:inherit; cursor:pointer }
+.liquid-preview__toggle:focus-visible { outline:2px solid #126039; outline-offset:4px }

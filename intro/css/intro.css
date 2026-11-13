@@ -1,423 +1,274 @@
 /* ==========================================================================
-   Viridance — 生态修复专题「前置开场片头」（自动播放版 / 自包含组件）
-   固定机位 / 纵向羽化遮罩 / 时间轴驱动四阶段 / 网页文字叠层
-   --------------------------------------------------------------------------
-   节奏沿用旧版前置开场：黑场渐显 → 文字从底部推出 → 一次一拍、
-   拍间交叉淡化 → 末拍停留 → 整层淡出，直接揭示宿主页首页。
-   四拍各有一条独立英文文案，与阶段节点同步切换；界面不出现中文。
-   所有可见状态都是播放时间 t 的纯函数，由 js/main.js 的 render(t) 驱动；
-   CSS 只承担静态排版与拍间短淡入淡出，不跑任何循环动画。
-
-   合并进首页时只需要本文件（外加两个 js 与四张图），
-   不依赖宿主页的 reset / 变量 / 字体设置。
+   Viridance Intro — 开场动画样式（白底版）
+   主题色集中在 .intro-root 的变量里：换白/深只需改 --intro-* 三个值。
+   原则：只让 JS 动画 transform / opacity / clip-path；
+         CSS 本身不跑循环动画，不产生闪烁。
    ========================================================================== */
 
-/* 开场层自带：播放期间锁滚动 + 读屏专用隐藏（原 site.css 里的部分已并入） */
+.intro-root {
+  /* 白底主题令牌 */
+  --intro-ink: #17251F;                        /* 深森林绿（主文字） */
+  --intro-muted: rgba(23, 37, 31, 0.72);       /* 次级文字 */
+  --intro-hairline: rgba(23, 37, 31, 0.18);    /* 描边 */
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #FFFFFF;                 /* 白底（由 config.sequence.background 控制） */
+  color: var(--intro-ink);
+  will-change: opacity;
+  overflow: hidden;
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, "PingFang SC",
+               "Microsoft YaHei", Arial, sans-serif;
+}
+
+/* 滚动锁定 */
 html.intro-locked, body.intro-locked {
   overflow: hidden !important;
   touch-action: none;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* 内容层撑满视口，保证舞台垂直居中 */
+.intro-content {
+  position: relative;      /* 水印定位基准 */
+  height: 100%;
 }
 
-/* 局部 reset：合并进首页后不依赖宿主页是否设置了全局 border-box */
-.intro-root,
-.intro-root *,
-.intro-root *::before,
-.intro-root *::after { box-sizing: border-box; }
+/* --------------------------------------------------------------------------
+ * 背景水印：超大极浅品牌字，铺满 84% 视宽，Logo 落在它正中
+ * 静态层，只有 opacity 由 JS 驱动（第一拍前 0.3s 淡入，末拍随 Logo 一起消散）
+ * -------------------------------------------------------------------------- */
+.intro-watermark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  transform: translate(-50%, -50%);
+  font-size: 15.7vw;                 /* 约铺满 84% 视宽，两端留出呼吸 */
+  line-height: 0.82;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(23, 37, 31, 0.055);    /* 近黑 5.5% → 白底上的极浅灰 */
+  pointer-events: none;
+  user-select: none;
+  will-change: opacity, transform, filter;
+}
 
-.intro-root {
-  --warm: #f5f1e8;
-  --warm-70: rgba(245, 241, 232, 0.70);
-  --warm-45: rgba(245, 241, 232, 0.45);
-  --hair: rgba(245, 241, 232, 0.26);
-  --gutter: clamp(24px, 4.4vw, 76px);
+/* --------------------------------------------------------------------------
+ * 舞台：所有拍绝对定位堆叠在同一中心点，一次只亮一拍
+ * -------------------------------------------------------------------------- */
+.intro-stage {
+  position: relative;
+  z-index: 1;              /* 所有拍都压在水印之上 */
+  height: 100%;
+}
 
-  display: none;                 /* 不播放时根本不渲染，零闪跳 */
-  position: fixed;
+.intro-beat {
+  position: absolute;
   inset: 0;
-  z-index: 9999;
-  background: #10181a;
-  color: var(--warm);
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  text-align: center;
+  opacity: 0;                /* 由 IntroTimeline 驱动 */
   will-change: opacity;
 }
-html.intro-enabled .intro-root { display: block; }
 
-.intro-stage {
-  position: absolute;
-  inset: 0;
+/* 入场遮罩：裁住文字，配合 GSAP yPercent 实现"从底部向上推出" */
+.intro-beat__mask {
+  display: inline-block;
   overflow: hidden;
-  isolation: isolate;
-  background: #10181a;
+  max-width: 100%;
+  /* 上下各留 0.18em 内边距，避免升部/降部字母被遮罩切掉，同时不露出推出起点 */
+  padding: 0.18em 0.15em;
+  margin: -0.18em -0.15em;
 }
 
-/* --------------------------------------------------------------------------
-   影像层：四张 1536×864 同机位画面，cover 铺满桌面视口
-   -------------------------------------------------------------------------- */
-.intro-vision {
+/* 文字拍：三层堆叠（基色 + 色罩层 + 亮芯层），扫光用 clip-path 窗口移动 */
+.intro-beat__stack {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  will-change: transform;    /* 入场推出 / 出场上浮由 GSAP 驱动 */
+}
+.intro-beat__stack--logo { display: inline-block; }
+.intro-beat__text {
+  display: inline-block;
+}
+.intro-beat__text--base { position: relative; }
+.intro-beat__text--tint,
+.intro-beat__text--sheen {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  opacity: 0;                   /* 黑场渐显，由时间轴驱动 */
-  background: #10181a;
-}
-
-.vision-layer {
-  position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: opacity, mask-image;
-}
-/* 默认相对路径；合并进首页时可改这里的 4 个 url，
-   或由 js/intro.config.js 的 assetPath 自动注入 --intro-img-* 覆盖。 */
-.vision-layer--soil   { background-image: var(--intro-img-soil,   url("../assets/stages/soil.jpg")); }
-.vision-layer--grass  { background-image: var(--intro-img-grass,  url("../assets/stages/grass.jpg")); }
-.vision-layer--shrub  { background-image: var(--intro-img-shrub,  url("../assets/stages/shrub.jpg")); }
-.vision-layer--forest { background-image: var(--intro-img-forest, url("../assets/stages/forest.jpg")); }
-
-/* 初始隐藏三个新增植被层；揭示时由 JS 复位为 mask 渐变 */
-.vision-layer.is-masked {
-  opacity: 0;
-  --cut: -11%;
-  -webkit-mask-image: linear-gradient(to top,
-      #000 0%,
-      #000 var(--cut),
-      transparent calc(var(--cut) + 11%),
-      transparent 100%);
-  mask-image: linear-gradient(to top,
-      #000 0%,
-      #000 var(--cut),
-      transparent calc(var(--cut) + 11%),
-      transparent 100%);
-}
-
-/* 统一的低饱和冷调 + 极轻胶片颗粒 */
-.vision-grade {
-  position: absolute;
-  inset: 0;
+  color: transparent !important;
+  -webkit-background-clip: text;
+  background-clip: text;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(116, 143, 151, 0.07) 0%,
-                                      rgba(24, 36, 33, 0.04) 55%,
-                                      rgba(18, 27, 25, 0.09) 100%);
 }
-.vision-grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.045;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+/* 色罩：低饱和矿土绿赭渐变，入场时覆盖文字、0.9s 内淡出 →
+   白底上呈现"彩色 → 深林绿"的落定过程 */
+.intro-beat__text--tint {
+  background-image: linear-gradient(105deg,
+    #4F7F65 0%,
+    #A44F2A 52%,
+    #2F5D46 100%);
+  opacity: 0.8;
 }
-.vision-scrim {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      rgba(8, 14, 16, 0.68) 0%, rgba(8, 14, 16, 0.42) 22%,
-      rgba(8, 14, 16, 0.12) 46%, rgba(8, 14, 16, 0) 68%),
-    linear-gradient(270deg,
-      rgba(8, 14, 16, 0.34) 0%, rgba(8, 14, 16, 0.08) 20%,
-      rgba(8, 14, 16, 0) 38%),
-    linear-gradient(180deg,
-      rgba(8, 14, 16, 0.30) 0%, rgba(8, 14, 16, 0) 20%,
-      rgba(8, 14, 16, 0) 70%, rgba(8, 14, 16, 0.46) 100%),
-    radial-gradient(125% 105% at 50% 45%,
-      rgba(6, 11, 13, 0) 52%, rgba(6, 11, 13, 0.24) 100%);
+/* 扫光亮芯：一道纯白高光掠过深色字面（白底上即"反光"效果） */
+.intro-beat__text--sheen-core {
+  background-image: linear-gradient(105deg,
+    rgba(255, 255, 255, 0) 32%,
+    rgba(255, 255, 255, 0.92) 50%,
+    rgba(255, 255, 255, 0) 68%);
 }
 
-/* --------------------------------------------------------------------------
-   文字叠层：所有入场 opacity / transform 由 render(t) 写入
-   -------------------------------------------------------------------------- */
-.intro-ui {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  /* 与主站标题同族（Our Services 页基准）：Inter Tight → Inter → 系统无衬线 */
-  font-family: "Inter Tight", "Inter", -apple-system, "Helvetica Neue",
-               "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
-  font-weight: 300;
-}
-.ui-top, .phase, .ui-bottom { opacity: 0; }
-.phase { transform: translateY(-50%); }
-
-/* 四拍文案舞台：四组标题叠在同一版位，跨节点交叉淡化。
-   首拍参与布局，用它的两行撑开与改版前一致的标题高度。 */
-.ui-title__line {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
-}
-.ui-title__line > span { display: block; }
-/* 首拍两行沿用旧版「从底部推出」入场，由 render(t) 写 translateY */
-.ui-title__beat[data-first] .ui-title__line > span {
-  transform: translateY(105%);
-  will-change: transform;
-}
-
-/* 顶栏 ------------------------------------------------------------------- */
-.ui-top {
-  position: absolute;
-  top: clamp(22px, 3.6vh, 44px);
-  left: var(--gutter);
-  right: var(--gutter);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand__mark {
-  font-size: 13px;
+/* 备用类型 word：品牌字标（超大、小写，参考片 "Gemini" 的量级）；当前序列未使用 */
+.intro-beat--word .intro-beat__text {
+  font-size: clamp(52px, 10vw, 128px);
   font-weight: 500;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  color: var(--intro-ink);
+  line-height: 1.1;
 }
-.ui-top__right {
-  display: flex;
-  align-items: center;
-  gap: clamp(18px, 3vw, 48px);
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  color: var(--warm-45);
-}
-.ui-top__num { color: var(--warm-70); }
 
-/* 左侧四拍主文案 --------------------------------------------------------- */
-.ui-title {
-  /* 字号 / 行高 / 字距 / 顶距全部沿用改版前那一版的数值 */
-  --title-size: clamp(38px, 5.05vw, 94px);
-  position: absolute;
-  left: var(--gutter);
-  top: clamp(112px, 21.5vh, 250px);
-  /* 容器放宽只是为了让长文案不被 overflow:hidden 裁切；文字仍左对齐 */
-  width: min(78vw, 1240px);
-  max-width: min(78vw, 1240px);
-}
-.intro-root .ui-title__head {
-  /* 前缀 .intro-root 提升权重（0-2-0），压制宿主页 `.vd h1{…}`（0-1-1）
-     对 color / font-family / font-size / font-weight 的覆盖。 */
-  position: relative;
-  width: 100%;
-  margin: 0;
-  font-family: inherit;
-  font-size: var(--title-size);
-  font-weight: 600;
-  line-height: 1.075;
-  letter-spacing: -0.02em;
+/* 使命文案（大写、宽字距、单行展示）：字号用 vw 按视口宽度等比缩放，
+   保证最长一句（48 字符）在任何断点都完整落在一行内不换行、不溢出 */
+.intro-beat--line .intro-beat__text {
+  font-size: clamp(9px, 1.9vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: #fff;
-}
-.ui-title__beat {
-  display: block;                  /* 首拍 relative 时避免 inline 匿名块盒改变行盒高度 */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  font-size: var(--title-size);       /* 四拍共用同一字号，不逐拍缩放 */
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 260ms ease, transform 260ms ease-out;
-  pointer-events: none;
-  will-change: opacity, transform;
-}
-.ui-title__beat:first-child { position: relative; }
-.ui-title__beat.is-visible { opacity: 1; transform: translateY(0); }
-
-/* 右侧阶段读数 ----------------------------------------------------------- */
-.phase {
-  position: absolute;
-  top: 50%;
-  right: var(--gutter);
-  text-align: right;
-}
-.phase__meta {
-  display: flex;
-  justify-content: flex-end;
-  gap: 22px;
-  margin: 0;
-  font-size: 9px;
-  letter-spacing: 0.26em;
-  color: var(--warm-45);
-}
-.phase__meta span:last-child { color: var(--warm-70); font-variant-numeric: tabular-nums; }
-.phase__current {
-  position: relative;
-  display: block;
-  height: 1.16em;
-  margin-top: 16px;
-  font-size: clamp(30px, 3.15vw, 56px);
-  font-weight: 600;
-  line-height: 1.16;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  color: var(--warm);
-}
-/* 双槽位交叉淡入淡出：跨阶段节点的短过渡（对齐旧版 0.25s 拍间交叉） */
-.phase__word {
-  position: absolute;
-  right: 0;
-  top: 0;
+  line-height: 1.6;
   white-space: nowrap;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 250ms ease, transform 250ms ease-out;
+  color: var(--intro-ink);   /* 白底上用主墨色，对齐参考片的深底高对比观感 */
 }
-.phase__word.is-visible { opacity: 1; transform: translateY(0); }
-.phase__zh {
-  margin: 12px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--warm-70);
-  transition: opacity 250ms ease;
-}
-.phase__rail {
-  display: flex;
-  justify-content: flex-end;
-  gap: clamp(10px, 1.2vw, 20px);
-  margin-top: clamp(24px, 3.4vh, 40px);
-  padding-top: 12px;
-  border-top: 1px solid var(--hair);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  color: var(--warm);
-}
-.phase__rail span { opacity: 0.34; transition: opacity 260ms ease; }
-.phase__rail span.is-active { opacity: 1; }
 
-/* 底部：跳过入口 + 进度 -------------------------------------------------- */
-.ui-bottom {
-  position: absolute;
-  left: var(--gutter);
-  right: var(--gutter);
-  bottom: clamp(24px, 4.2vh, 52px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
+/* 末拍：Logo（plate: false 直接落在舞台底色上；plate: true 时套白色承托区） */
+.intro-beat--logo { gap: 0; }
+.intro-logo {
+  display: block;
+  /* 横向锁定组合（约 2.85:1）：宽度驱动、高度自适应，任何断点都不裁切不拉伸 */
+  width: min(44vw, 280px);
+  height: auto;
+  object-fit: contain;
+  will-change: opacity, transform, filter;   /* 出场烟雾消散：blur + 上浮 + 放大 */
 }
-.intro-skip-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; }
-.intro-skip {
-  pointer-events: auto;          /* 父层 pointer-events:none，仅此按钮可点 */
-  padding: 0 0 4px;
-  border: 0;
-  border-bottom: 1px solid var(--hair);
-  background: none;
-  color: var(--warm-70);
-  font: inherit;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 150ms ease, border-color 150ms ease;
+.intro-plate {
+  margin: 0;
+  background: #FFFFFF;
+  padding: clamp(26px, 4.5vw, 48px) clamp(40px, 7vw, 92px);
+  border-radius: 2px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
-.intro-skip:hover { color: var(--warm); border-color: var(--warm); }
-.intro-skip:focus-visible { outline: 2px solid var(--warm); outline-offset: 6px; }
-.intro-skip__meta {
-  font-size: 9px;
+
+/* Logo 缺失时的占位字标（替换正式 Logo 后不会出现） */
+.intro-logo-fallback { display: none; text-align: center; color: var(--intro-ink); }
+.intro-logo-fallback__word {
+  display: block;
+  font-size: clamp(22px, 3.4vw, 34px);
   letter-spacing: 0.22em;
-  color: var(--warm-45);
+  font-weight: 600;
 }
-
-.progress { text-align: right; }
-.progress__label {
+.intro-logo-fallback__sub {
   display: block;
-  margin-bottom: 12px;
-  font-size: 9px;
-  letter-spacing: 0.26em;
-  color: var(--warm-45);
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(23, 37, 31, 0.55);
 }
-.progress__body { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
-.progress__track {
-  display: block;
-  position: relative;
-  width: clamp(120px, 14vw, 224px);
-  height: 1px;
-  background: var(--hair);
-  overflow: hidden;
-}
-.progress__fill {
-  position: absolute;
-  inset: 0;
-  background: var(--warm);
-  transform: scaleX(0);
-  transform-origin: left center;
-  will-change: transform;
-}
-.progress__value {
-  min-width: 44px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  font-variant-numeric: tabular-nums;
-  color: var(--warm);
-}
-
-/* 定格调试（?t=）下关掉所有过渡，保证截图是精确帧 */
-.intro-root.is-seek .ui-title__beat,
-.intro-root.is-seek .phase__word,
-.intro-root.is-seek .phase__zh,
-.intro-root.is-seek .phase__rail span,
-.intro-root.is-seek .intro-skip { transition: none !important; }
+.intro-plate .intro-logo-fallback { color: #17251F; }
+.intro-plate .intro-logo-fallback__sub { color: #5C6B62; }
 
 /* --------------------------------------------------------------------------
-   响应式：窄屏收紧字距与密度，保留同一构图与四阶段逻辑
-   -------------------------------------------------------------------------- */
-@media (max-width: 900px) {
-  .ui-title {
-    --title-size: clamp(30px, 6.2vw, 54px);
-    width: 78vw;
-    max-width: 78vw;
-    top: 20vh;
+ * Skip 入口（按设计系统按钮规格）：
+ *   高 40px / 14px Inter / 文字 #0B1410 / 底色 #90E967 / padding 0 20px
+ * 视觉高度 40px，但用伪元素把命中区外扩到 44px，兼顾规格与可访问性
+ * -------------------------------------------------------------------------- */
+.intro-skip {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(28px, 6vh, 56px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;                    /* 参考按钮实测高度 */
+  min-width: 44px;
+  padding: 0 20px;                 /* 参考按钮 padding: 0 20px */
+  font-family: Inter, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;                 /* 参考按钮 14px */
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0B1410;                  /* 参考按钮文字色（对比度 12.51:1） */
+  background: #90E967;             /* 参考按钮底色 */
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  will-change: opacity;
+  transition: background-color 150ms ease;
+}
+/* 命中区外扩到 44px（视觉仍是 40px 高） */
+.intro-skip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -2px;
+  bottom: -2px;
+}
+.intro-skip:hover { background: #7EDC50; }
+/* 键盘聚焦：不画描边，只用底色加深提示（保持"无外框"的外观） */
+.intro-skip:focus-visible { background: #7EDC50; outline: none; }
+
+/* --------------------------------------------------------------------------
+ * 静态版（prefers-reduced-motion / 降级）：只显示 Logo 拍，隐藏扫光层
+ * -------------------------------------------------------------------------- */
+.intro-root--static .intro-beat { opacity: 0 !important; }
+.intro-root--static .intro-beat--logo { opacity: 1 !important; }
+.intro-root--static .intro-beat__text--sheen,
+.intro-root--static .intro-beat__text--tint { display: none; }
+.intro-root--static .intro-beat__stack { transform: none !important; }
+.intro-root--static .intro-skip { opacity: 1 !important; }
+
+/* --------------------------------------------------------------------------
+ * 移动端：字标缩小、文案字距收紧，其余保持
+ * -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .intro-beat--word .intro-beat__text { font-size: clamp(44px, 14vw, 72px); }
+  .intro-beat--line .intro-beat__text {
+    /* 窄屏按 vw 等比缩小并收紧字距：最长 48 字符在 320px 宽也能单行放得下 */
+    font-size: clamp(7px, 2.1vw, 13px);
+    letter-spacing: 0.14em;
   }
-  .ui-top__right span:first-child { display: none; }
-  .phase__current { font-size: clamp(24px, 4.4vw, 38px); }
-  .phase__rail { gap: 9px; font-size: 8px; }
+  .intro-logo { width: min(60vw, 210px); }
+  .intro-plate { padding: 20px 26px; }
 }
 
-@media (max-width: 640px) {
-  .intro-root { --gutter: 22px; }
-  /* 竖屏裁切后河道与沙洲占据画面中部，局部加深右侧阶段读数区域 */
-  .vision-scrim {
-    background:
-      linear-gradient(90deg, rgba(8, 14, 16, 0.66) 0%, rgba(8, 14, 16, 0.22) 58%,
-                              rgba(8, 14, 16, 0.06) 100%),
-      radial-gradient(100% 30% at 82% 68%,
-        rgba(8, 14, 16, 0.62) 0%, rgba(8, 14, 16, 0.26) 58%,
-        rgba(8, 14, 16, 0) 100%),
-      linear-gradient(180deg, rgba(8, 14, 16, 0.34) 0%, rgba(8, 14, 16, 0) 18%,
-                              rgba(8, 14, 16, 0) 70%, rgba(8, 14, 16, 0.52) 100%);
-  }
-  .ui-title {
-    --title-size: clamp(26px, 7.2vw, 40px);
-    width: 88vw;
-    max-width: 88vw;
-    top: 19vh;
-  }
-  .ui-title__head { letter-spacing: -0.01em; }
-  .phase { top: 68%; }
-  .phase__meta { gap: 12px; font-size: 8px; color: var(--warm-70); }
-  .phase__zh { color: var(--warm); }
-  .phase__rail { display: none; }
-  .progress__label { display: none; }
-  .progress__track { width: 84px; }
-  .intro-skip { font-size: 9px; letter-spacing: 0.18em; }
-  .intro-skip__meta { font-size: 8px; }
+/* --------------------------------------------------------------------------
+ * prefers-reduced-motion：静态呈现（配合 HeroHandoff.revealStatic）
+ * -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .intro-beat__text--sheen,
+  .intro-beat__text--tint { display: none; }
+  .intro-beat { opacity: 0; }
+  .intro-beat--logo { opacity: 1; }
+  .intro-beat__stack { transform: none !important; }
+  .intro-skip { opacity: 1 !important; }
 }
+
+/* Shared liquid wash, below the watermark and all four beats. */
+.intro-root .liquid-preview__wash { position:absolute; pointer-events:none; }
+.intro-root--static .liquid-preview__color { animation-play-state:paused; }
+.intro-root .vi-brand { position:relative; display:block; width:clamp(215px,20vw,620px); max-width:76vw; padding:0; border:0; background:none; }
+.intro-root .vi-brand svg { display:block; width:100%; height:auto; overflow:visible }
+.intro-root .vi-brand .vi-trails { position:absolute; inset:0; pointer-events:none }
+.intro-root .vi-orbit-ring,.intro-root .vi-orbit-arc,.intro-root .vi-orbit-dot { opacity:0 }
+.intro-root .vi-orbit-ring,.intro-root .vi-orbit-arc { fill:none; transform-origin:1064px 374px }
+.intro-root #vi-leaf,.intro-root #vi-word { transform-box:fill-box; transform-origin:50% 80% }
+.intro-root #vi-word > :is(path,use),.intro-root :is(#vi-line-one,#vi-line-two) { transform-box:fill-box; transform-origin:center }

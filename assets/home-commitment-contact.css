@@ -16,7 +16,10 @@
   max-width: calc(var(--content-wide) - var(--gut) - var(--gut));
   min-height: 580px;
   margin-block: 64px;
-  padding: 0;
+  /* 主文件 responsive-gutter-fix 会给所有 .vd .container 加左右 !important 内边距，
+     本卡片是自带布局的 container，必须顶住它，否则 ≤1100px 时图片/文案区被内缩
+     24~64px，露出的一圈浅绿底看起来像卡片没铺满、标题被挤窄。 */
+  padding: 0 !important;
   overflow: hidden;
   border: 1px solid rgba(16, 51, 38, 0.12);
   border-radius: 24px;
@@ -145,7 +148,9 @@
   }
 }
 
-@media (max-width: 760px) {
+/* 与站内主断点统一为 767px：原 760px 会让 761~767px 出现
+   「其它模块已切移动端、本卡片仍是两列挤压」的灰色区间。 */
+@media (max-width: 767px) {
   .vd #p1 .home-commitment-contact {
     grid-template-columns: 1fr;
     min-height: 0;

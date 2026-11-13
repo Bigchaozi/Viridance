@@ -40,8 +40,8 @@
   width:auto!important;
   height:auto!important;
   background:
-    linear-gradient(90deg,rgba(5,25,18,.58) 0%,rgba(8,38,27,.28) 45%,rgba(7,28,21,.06) 76%),
-    linear-gradient(180deg,rgba(7,22,17,.05),rgba(7,22,17,.16))!important;
+    linear-gradient(90deg,rgba(5,25,18,.28) 0%,rgba(8,38,27,.12) 45%,rgba(7,28,21,.02) 76%),
+    linear-gradient(180deg,rgba(7,22,17,.02),rgba(7,22,17,.07))!important;
   color:transparent!important;
   transform:none!important;
   animation:none!important;
@@ -57,7 +57,7 @@
   height:auto!important;
   border:0!important;
   border-radius:0!important;
-  background:linear-gradient(180deg,rgba(4,16,12,.06),transparent 28%,rgba(4,16,12,.16))!important;
+  background:linear-gradient(180deg,rgba(4,16,12,.02),transparent 28%,rgba(4,16,12,.07))!important;
   box-shadow:none!important;
   transform:none!important;
   animation:none!important;
@@ -350,7 +350,7 @@
     object-position:66% center;
   }
   .vd #p2 > .inner-hero.inner-hero--about::before{
-    background:linear-gradient(180deg,rgba(5,25,18,.38),rgba(5,25,18,.62))!important;
+    background:linear-gradient(180deg,rgba(5,25,18,.16),rgba(5,25,18,.32))!important;
   }
   .vd #p2 > .inner-hero.inner-hero--about .inner-hero__content{
     min-height:calc(100svh - 64px);
