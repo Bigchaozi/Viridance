@@ -324,7 +324,7 @@
 }
 
 .vd #p9 .news-pagination{
-  justify-content:flex-start;
+  justify-content:center; /* 翻页标签在内容区内水平居中 */
   margin-top:56px;
 }
 
