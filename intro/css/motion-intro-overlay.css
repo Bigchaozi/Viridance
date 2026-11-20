@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Motion Typography Intro — 主页前置开场承载层
+   6 镜头动态排版文字开场（由 intro/motion-intro.html 以 iframe 承载）。
+   复用现有 intro 契约：z-index 9999 / .intro-locked 滚动锁定 / viridance:intro:complete。
+   独立文件、非破坏式接入：旧 intro 资源保留，改 1 行即可回退。
+   ========================================================================== */
+
+.motion-intro-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #ffffff;
+  overflow: hidden;
+  will-change: opacity;
+}
+
+/* 承载开场动画的 iframe：铺满遮罩，无边框，禁止滚动与指针穿透到主页 */
+.motion-intro-root__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #ffffff;
+}
+
+/* 跳过按钮：与旧版 intro-skip 视觉一致（右下角胶囊，置于 iframe 之上） */
+.motion-intro-root__skip {
+  position: absolute;
+  right: clamp(16px, 3vw, 34px);
+  bottom: clamp(16px, 3vw, 30px);
+  z-index: 2;
+  padding: 10px 20px;
+  border: 1px solid rgba(23, 37, 31, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #17251f;
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, "PingFang SC",
+    "Microsoft YaHei", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.motion-intro-root__skip:hover,
+.motion-intro-root__skip:focus-visible {
+  background: #7edc50;
+  border-color: #7edc50;
+  color: #0b2a10;
+  outline: none;
+}
+
+/* 淡出：由 JS 添加 .is-leaving 触发 */
+.motion-intro-root {
+  transition: opacity 500ms ease;
+}
+.motion-intro-root.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 减少动态效果 / 不支持 iframe 时的静态占位：直接给一个极短白屏后跳过 */
+@media (prefers-reduced-motion: reduce) {
+  .motion-intro-root { transition-duration: 150ms; }
+}
