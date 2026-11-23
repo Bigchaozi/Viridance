@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Viridance — Motion Typography Intro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg-color: #ffffff;
       --text-color: #000000;
-      /* 统一强调词渐变：深翠绿 -> 亮草绿 -> 嫩荧光绿 */
+      /* 沿用上文统一的强调词液态绿渐变：深翠绿 -> 亮草绿 -> 嫩荧光绿 */
       --accent-gradient: linear-gradient(90deg, #00A932 0%, #4ADB44 15.87%, #C3FF79 100%);
-      --logo-title-color: #0b3d13;
-      --logo-sub-color: #2d312e;
       --font-family: "Inter", "SF Pro Display", "Helvetica Neue", -apple-system,
         BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
     }
@@ -34,7 +35,7 @@
       user-select: none;
     }
 
-    /* ===== 片头液态渐变页面背景（融合自 test.html） ===== */
+    /* ================= 全屏浅绿液态渐变页面背景 ================= */
     .liquid-preview__wash {
       position: fixed;
       inset: 0;
@@ -42,21 +43,24 @@
       overflow: hidden;
       background: var(--bg-color);
       pointer-events: none;
+      contain: strict;
     }
 
     .liquid-preview__color {
       position: absolute;
       inset: -45%;
       will-change: transform;
+      backface-visibility: hidden;
     }
 
     .liquid-preview__color--sage {
       background: radial-gradient(
         ellipse 18% 22% at 34% 40%,
-        #d3f5be 0%,
-        #d3f5be 29%,
-        #ebfbe1 70%,
-        #ebfbe100 100%
+        #a9e58d 0%,
+        #bceda4 57%,
+        #d2f3bf 73%,
+        #e8f8de 82%,
+        #e8f8de00 100%
       );
       animation: liquid-sage 16s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
@@ -64,10 +68,11 @@
     .liquid-preview__color--mint {
       background: radial-gradient(
         ellipse 16% 20% at 62% 58%,
-        #dbf6cc 0%,
-        #dbf6cc 29%,
-        #effce8 70%,
-        #effce800 100%
+        #b4e798 0%,
+        #c6efb3 54%,
+        #dcf6ce 72%,
+        #edf9e6 82%,
+        #edf9e600 100%
       );
       animation: liquid-mint 16s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
@@ -86,20 +91,20 @@
     }
 
     @keyframes liquid-sage {
-      0%, 100% { transform: translate(-13%, -6%) rotate(-12deg); }
-      25% { transform: translate(14%, -17%) rotate(4deg); }
-      50% { transform: translate(28%, 12%) rotate(16deg); }
-      75% { transform: translate(4%, 20%) rotate(4deg); }
+      0%, 100% { transform: translate3d(-13%, -6%, 0) rotate(-12deg); }
+      25% { transform: translate3d(14%, -17%, 0) rotate(4deg); }
+      50% { transform: translate3d(28%, 12%, 0) rotate(16deg); }
+      75% { transform: translate3d(4%, 20%, 0) rotate(4deg); }
     }
 
     @keyframes liquid-mint {
-      0%, 100% { transform: translate(14%, 14%) rotate(10deg); }
-      25% { transform: translate(-17%, 14%) rotate(-6deg); }
-      50% { transform: translate(-27%, -10%) rotate(-18deg); }
-      75% { transform: translate(2%, -19%) rotate(-2deg); }
+      0%, 100% { transform: translate3d(14%, 14%, 0) rotate(10deg); }
+      25% { transform: translate3d(-17%, 14%, 0) rotate(-6deg); }
+      50% { transform: translate3d(-27%, -10%, 0) rotate(-18deg); }
+      75% { transform: translate3d(2%, -19%, 0) rotate(-2deg); }
     }
 
-    /* 居中承载 16:9 舞台，透明叠加在液态背景之上 */
+    /* ================= 16:9 居中舞台 ================= */
     .viewport {
       position: relative;
       z-index: 1;
@@ -111,7 +116,6 @@
       background-color: transparent;
     }
 
-    /* 16:9 主画布，使用容器查询单位 cqw 让字号随画布等比缩放 */
     .stage {
       position: relative;
       width: min(100vw, calc(100vh * 16 / 9));
@@ -119,22 +123,60 @@
       overflow: hidden;
       background-color: transparent;
       container-type: inline-size;
+      contain: layout paint;
     }
 
-    /* 镜头层：所有镜头叠放居中，通过时间轴严格串行出场 */
     .scene {
       position: absolute;
       inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
+      display: grid;
+      place-items: center;
       opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    /* ================= 镜头 1：Viridance Logo 原地渐现 + 光标点击退场 ================= */
+    .logo-scroll-mask {
+      overflow: visible;
+      padding: 4cqw;
+    }
+
+    .logo-wrap {
+      width: 42cqw;
+      transform-origin: 50% 72%;
       will-change: transform, opacity;
     }
 
-    /* 基础文字样式：现代无衬线粗体 */
+    .logo-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .mouse-cursor {
+      position: absolute;
+      left: 55%;
+      top: 47%;
+      width: 4cqw;
+      height: 4cqw;
+      margin: -0.42cqw 0 0 -0.75cqw;
+      transform-origin: 19% 10%;
+      opacity: 0;
+      filter: drop-shadow(0 0.3cqw 0.5cqw #12342438);
+      will-change: transform, opacity;
+    }
+
+    .mouse-cursor svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ================= 通用排版与强调词字内液态绿渐变 ================= */
     .line {
+      position: relative;
       display: inline-flex;
       align-items: baseline;
       justify-content: center;
@@ -142,20 +184,24 @@
       font-weight: 800;
       color: var(--text-color);
       letter-spacing: -0.035em;
-      line-height: 1.05;
+      line-height: 1.24;
       transform-origin: center center;
       will-change: transform, opacity;
     }
 
-    .word,
-    .phrase {
+    .word {
       display: inline-block;
       transform-origin: center center;
       will-change: transform, opacity;
       backface-visibility: hidden;
     }
 
-    /* 强调词渐变（真实 DOM 文本 + background-clip: text + 字内液态流动动效） */
+    .gap {
+      display: inline-block;
+      width: 0.27em;
+    }
+
+    /* 强调词液态绿渐变填充 + 字内流动动效 */
     .accent {
       background-image:
         radial-gradient(ellipse 46% 95% at 25% 50%, rgba(0, 169, 50, 0.72) 0%, rgba(74, 219, 68, 0.28) 55%, rgba(0, 169, 50, 0) 100%),
@@ -171,266 +217,153 @@
       animation: text-liquid-flow 3.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     }
 
-    /* 嵌在字形内部的液体流动关键帧：底色梯度横向往复流淌 + 双层同色光团交错漂移 */
     @keyframes text-liquid-flow {
-      0% {
-        background-position: 0% 35%, 100% 65%, 0% 50%;
-      }
-      33% {
-        background-position: 65% 85%, 35% 15%, 55% 50%;
-      }
-      66% {
-        background-position: 100% 20%, 0% 80%, 100% 50%;
-      }
-      100% {
-        background-position: 0% 35%, 100% 65%, 0% 50%;
-      }
+      0% { background-position: 0% 35%, 100% 65%, 0% 50%; }
+      33% { background-position: 65% 85%, 35% 15%, 55% 50%; }
+      66% { background-position: 100% 20%, 0% 80%, 100% 50%; }
+      100% { background-position: 0% 35%, 100% 65%, 0% 50%; }
     }
 
-    /* 词间自然空格 */
-    .gap {
-      display: inline-block;
-      width: 0.28em;
+    /* ================= 镜头 2：Beyond Compliance 3D 折纸逐字展开 ================= */
+    .s2-typography {
+      font-size: clamp(18px, 6.4cqw, 104px);
     }
 
-    /* 局部裁切遮罩，用于参考视频风格的利落切入 */
-    .clip-wrap {
-      display: inline-block;
-      overflow: hidden;
-      vertical-align: bottom;
-      padding-bottom: 0.1em;
-      margin-bottom: -0.1em;
-    }
-
-    /* ================= 镜头 3：紧凑大字整体滑入居中 + 快速滑出 ================= */
-    .scene-3 {
-      overflow: hidden;
-    }
-
-    .scene-3 .line {
-      letter-spacing: -0.04em;
-    }
-
-    .scene-3 .gap {
-      width: 0.24em;
-    }
-
-    /* ================= 镜头 5：箭头鼠标点击光标 ================= */
-    .mouse-cursor {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 4.4cqw;
-      height: 4.4cqw;
-      margin-left: -0.6cqw;
-      margin-top: -0.3cqw;
-      z-index: 4;
-      opacity: 0;
-      pointer-events: none;
-      transform-origin: 18% 12%;
-      will-change: transform, opacity;
-      filter: drop-shadow(0 0.5cqw 1cqw rgba(0, 0, 0, 0.22));
-    }
-
-    .mouse-cursor svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* ================= 镜头 1：键盘逐字输入与跟随光标 ================= */
-    .typing-stage {
+    .fold-stage {
       position: relative;
       display: inline-flex;
-      align-items: center;
-      justify-content: flex-start;
+      align-items: baseline;
+      justify-content: center;
+      perspective: 700px;
+      transform-style: preserve-3d;
     }
 
-    /* 隐形占位层：锁定最终居中宽度，保证文字严格从左至右推出且无水平抖动 */
-    .typing-ghost {
-      visibility: hidden;
+    .fold-text-word {
+      display: inline-flex;
+      align-items: baseline;
+      transform-style: preserve-3d;
+    }
+
+    .fold-text-segment {
+      display: inline-block;
+      transform-style: preserve-3d;
+    }
+
+    /* 单字以顶部铰链向下翻折，保持 GPU 合成，避免动态 filter 重绘 */
+    .fold-text-piece {
+      position: relative;
+      display: inline-block;
+      transform-origin: 50% 0%;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+      --fold-crease: 0;
+    }
+
+    .fold-text-piece::after {
+      content: attr(data-fold-text);
+      position: absolute;
+      inset: 0;
+      padding-block: inherit;
+      margin-block: inherit;
+      color: #062b10;
+      opacity: var(--fold-crease);
       pointer-events: none;
     }
 
-    /* 实际逐字渲染层：贴合左侧起点向右生长 */
-    .typing-live {
+    /* ================= 跨镜字母桥梁：Compliance 首字母 C 向左平移衔接 Creating ================= */
+    .letter-bridge {
       position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    /* 跟随输入光标 */
-    .typing-cursor {
-      display: inline-block;
-      width: 0.085em;
-      height: 0.92em;
-      margin-left: 0.06em;
-      border-radius: 1px;
-      background-color: var(--text-color);
-      vertical-align: middle;
-      flex-shrink: 0;
-      transition: background-color 0.12s ease, opacity 0.12s ease;
-      will-change: opacity;
-    }
-
-    /* 输入至强调词 TECHNOLOGIES 时光标切换为品牌翠绿 */
-    .typing-cursor.is-accent {
-      background-color: #00A932;
-    }
-
-    /* 输入完成停留阶段的光标闪烁 */
-    .typing-cursor.is-blinking {
-      animation: cursor-blink 0.42s steps(1, end) infinite;
-    }
-
-    @keyframes cursor-blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    /* ================= 结尾 Viridance Logo 排版结构 ================= */
-    /* 向上滚动遮罩容器：裁切底部入场边界，保证纯正的向上滚入质感 */
-    .logo-scroll-mask {
-      overflow: hidden;
-      padding: 1.2cqw 1cqw;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo-lockup {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2.1cqw;
-      will-change: transform, opacity;
-    }
-
-    /* 锁定图标原始纵横比（220:210）并禁止弹性压缩，彻底防止拉伸变形 */
-    .logo-mark-wrap {
-      width: 13.8cqw;
-      aspect-ratio: 220 / 210;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      will-change: transform, opacity;
-    }
-
-    .logo-mark-wrap svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .logo-text-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      flex-shrink: 0;
-      line-height: 1;
-      will-change: transform, opacity;
-    }
-
-    .logo-brand {
-      font-size: 6.1cqw;
+      left: var(--glyph-left, 0px);
+      top: var(--glyph-top, 0px);
+      font-size: clamp(18px, 6.4cqw, 104px);
       font-weight: 800;
-      letter-spacing: 0.015em;
-      color: var(--logo-title-color);
-      line-height: 0.98;
-      margin-bottom: 0.55cqw;
-    }
-
-    .logo-sub {
-      font-size: 2.05cqw;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      color: var(--logo-sub-color);
-      line-height: 1.22;
-      white-space: nowrap;
-    }
-
-    /* ================= 镜头 6：最终品牌 Logo 收尾定格 ================= */
-    .logo-stage-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      letter-spacing: -0.035em;
+      line-height: 1.24;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 6;
+      transform-origin: left center;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
       will-change: transform, opacity;
+      contain: layout style;
     }
 
-    .logo-embed {
-      width: 62cqw;
-      max-width: 62cqw;
-      will-change: transform, opacity;
-      filter: drop-shadow(0 1.1cqw 2.4cqw rgba(0, 60, 20, 0.10));
-    }
-
-    .logo-embed .logo-svg {
+    /* 飞行中冻结液态渐变，避免 background-clip 动画与位移抢合成层导致卡顿 */
+    .letter-bridge .bridge-glyph {
       display: block;
-      width: 100%;
-      height: auto;
-      overflow: visible;
+      transform-origin: left center;
+      backface-visibility: hidden;
+      animation: none !important;
+      background-image: var(--accent-gradient);
+      background-size: 100% 100%;
+      background-position: 0% 50%;
     }
 
-    /* SVG 内部各部件以自身包围盒为变换基准，缩放/旋转位移平稳 */
-    .logo-embed .logo-leaf,
-    .logo-embed .logo-wordmark,
-    .logo-embed .logo-tagline {
-      transform-box: fill-box;
-      transform-origin: center center;
-      will-change: transform, opacity;
+    /* ================= 镜头 3：Creating Lasting Ecosystem ================= */
+    .s3-typography {
+      font-size: clamp(15px, 5.2cqw, 86px);
+    }
+
+    .s3-first-c {
+      display: inline-block;
       backface-visibility: hidden;
     }
 
-    /* 叶片以叶柄（左下）为生长原点 */
-    .logo-embed .logo-leaf {
-      transform-origin: 14% 86%;
+    .s3-word-rest {
+      display: inline-block;
+      transform-origin: left center;
+      will-change: transform, opacity;
     }
 
-    .scene-reduced .logo-embed {
-      width: 66cqw;
+    /* ================= 暂停状态冻结 CSS 动效 ================= */
+    body.is-paused .liquid-preview__color,
+    body.is-paused .accent {
+      animation-play-state: paused !important;
     }
 
-    /* 移动端窄屏保护：确保舞台按宽度等比缩放 */
-    @media (max-width: 640px) {
-      .stage {
-        width: 100vw;
-      }
+    /* ================= 无障碍降级 ================= */
+    .static-lockup {
+      display: none;
     }
 
-    /* 减少动态效果：直接静态展示清晰居中的结尾 Logo，并停止液态流动 */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .liquid-preview__color,
       .accent {
         animation: none;
       }
-      .accent {
-        background-image: var(--accent-gradient);
-        background-size: 100% 100%;
-        background-position: 50% 50%;
-      }
-      .scene {
+      .stage .scene,
+      .letter-bridge,
+      .playback-bar {
         display: none;
       }
-      .scene-reduced {
-        display: flex;
-        opacity: 1;
+      .static-lockup {
+        display: grid;
+        position: absolute;
+        inset: 0;
+        place-content: center;
+        justify-items: center;
+        gap: 2.2cqw;
+      }
+      .static-lockup .brand {
+        width: 46cqw;
+      }
+      .static-lockup .line {
+        font-size: 4.1cqw;
       }
     }
 
-    /* ================= 暂停状态：冻结所有 CSS 动态（背景、字内液态流、光标闪烁） ================= */
-    body.is-paused .liquid-preview__color,
-    body.is-paused .accent,
-    body.is-paused .typing-cursor {
-      animation-play-state: paused !important;
-    }
-
-    /* ================= 悬浮底部控制栏（播放/暂停 + 可拖拽进度条 + 时间读数） ================= */
+    /* ================= 悬浮底部播放控制栏 ================= */
     .playback-bar {
       position: fixed;
       left: 50%;
@@ -444,7 +377,7 @@
       padding: 8px 14px 8px 10px;
       border: 1px solid rgba(11, 61, 19, 0.14);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.84);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
@@ -480,6 +413,12 @@
       transform: scale(0.96);
     }
 
+    .playback-control:focus-visible,
+    .progress-slider:focus-visible {
+      outline: 2px solid #00A932;
+      outline-offset: 4px;
+    }
+
     .playback-control svg {
       width: 13px;
       height: 13px;
@@ -487,7 +426,6 @@
       flex-shrink: 0;
     }
 
-    /* 可拖拽进度滑块 */
     .progress-slider {
       -webkit-appearance: none;
       appearance: none;
@@ -538,7 +476,6 @@
       border: 2.5px solid #00A932;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
       cursor: grab;
-      transition: transform 0.14s ease;
     }
 
     .progress-slider::-moz-range-track {
@@ -575,12 +512,8 @@
         min-width: 78px;
       }
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      .playback-bar {
-        display: none;
-      }
-    }
+  /* 主页前置开场嵌入模式：隐藏演示控制栏 */
+    .playback-bar { display: none !important; }
   </style>
 </head>
 <body>
@@ -591,201 +524,88 @@
   </div>
 
   <main class="viewport" aria-label="Viridance 动态排版文字开场">
-    <section class="stage" id="stage"></section>
+    <section class="stage" id="stage" aria-label="品牌片头">
+      <!-- 镜头 1：Viridance Logo（原地渐现 -> 光标滑入点击 -> 点击后快速淡出退场） -->
+      <div class="scene scene-logo" id="logoScene" aria-hidden="true">
+        <div class="logo-scroll-mask">
+          <div class="logo-wrap" id="logoWrap">
+            <div id="logoBrand"></div>
+          </div>
+        </div>
+        <div class="mouse-cursor" id="motionCursor"></div>
+      </div>
+
+      <!-- 镜头 2：Beyond Compliance 3D 折纸逐字展开 -->
+      <div class="scene scene-2" id="secondScene" aria-hidden="true">
+        <div class="line s2-typography fold-stage" id="s2FoldLine">
+          <span class="fold-text-word" id="s2W1"></span>
+          <span class="gap" id="s2Gap"></span>
+          <span class="fold-text-word" id="s2W2"></span>
+        </div>
+      </div>
+
+      <!-- 跨镜字母桥梁：复用 Compliance 首字母 C 向左平移，衔接 Creating 正常字号位置 -->
+      <div class="letter-bridge" id="letterBridge" aria-hidden="true">
+        <span class="bridge-glyph accent" id="bridgeChar">C</span>
+      </div>
+
+      <!-- 镜头 3：Creating Lasting Ecosystem 逐词弹入与动态居中 -->
+      <div class="scene scene-3" id="thirdScene" aria-hidden="true">
+        <div class="line s3-typography" id="s3Line">
+          <span class="word" id="s3W0">
+            <span class="s3-first-c accent" id="s3FirstC">C</span><span class="s3-word-rest accent" id="s3Rest">reating</span>
+          </span>
+          <span class="gap"></span>
+          <span class="word" id="s3W1">Lasting</span>
+          <span class="gap"></span>
+          <span class="word" id="s3W2">Ecosystem</span>
+        </div>
+      </div>
+
+      <!-- 减少动态效果时的静态展示 -->
+      <div class="static-lockup" id="staticLockup" aria-hidden="true"></div>
+      <span class="visually-hidden" id="introTranscript" lang="en">
+        Viridance. Beyond Compliance. Creating Lasting Ecosystem.
+      </span>
+    </section>
   </main>
+
+  <!-- 悬浮底部播放控制栏（暂停/播放 + 可拖拽进度条 + 时间读数） -->
+  <div class="playback-bar" role="region" aria-label="动画播放控制">
+    <button
+      type="button"
+      class="playback-control"
+      id="playPauseBtn"
+      aria-label="暂停动画"
+      title="暂停 / 播放（快捷键：空格键）"
+    >
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="3" y="2.5" width="3.5" height="11" rx="1"></rect>
+        <rect x="9.5" y="2.5" width="3.5" height="11" rx="1"></rect>
+      </svg>
+      <span>暂停</span>
+    </button>
+
+    <input
+      type="range"
+      class="progress-slider"
+      id="progressSlider"
+      min="0"
+      max="6280"
+      step="1"
+      value="0"
+      aria-label="动画播放进度"
+    />
+
+    <span class="time-readout" id="timeReadout">0.00s / 6.28s</span>
+  </div>
 
   <script>
     /**
      * =========================================================================
-     * 全局配置对象（集中管理文案、配色、时间轴、字号与位移参数，便于品牌替换）
-     * 总时长约 10.25 秒（已开启自动循环播放）
+     * 官方高精度矢量 Viridance Logo SVG（保留完整叶脉渐变、描边字标与副标）
      * =========================================================================
      */
-    const CONFIG = {
-      playback: {
-        autoplay: true,      // 页面加载后自动播放
-        loop: false,         // 作为主页前置开场：播完停留末帧，由父页面淡出揭示首页
-        loopPauseMs: 800,    // 保留字段（loop=false 时不再使用）
-        totalDuration: 10250,
-      },
-
-      colors: {
-        background: "#ffffff", // 液态背景底色（纯白，搭配淡绿流动光晕）
-        text: "#000000",       // 普通文字纯黑
-        // 当前启用的强调色：深翠绿 -> 亮草绿 -> 嫩荧光绿（配合字内液态流动动效）
-        accentGradient: "linear-gradient(90deg, #00A932 0%, #4ADB44 15.87%, #C3FF79 100%)",
-        logoTitle: "#0b3d13",
-        logoSub: "#2d312e",
-        // 备用渐变预设（可按需替换给 accentGradient）
-        presets: {
-          vibrantEmerald: "linear-gradient(90deg, #00A932 0%, #4ADB44 15.87%, #C3FF79 100%)",
-          mintBlue: "linear-gradient(90deg, #75FF9E 0%, #226EE0 100%)",
-          liquidLimeYellow: "linear-gradient(90deg, #7AFF3D 0%, #C3E23B 77.58%, #FFDB08 100%)",
-          brandGreen: "linear-gradient(90deg, #76c417 0%, #249628 48%, #0a4d1a 100%)",
-          referencePurpleMagenta: "linear-gradient(90deg, #6366f1 0%, #9333ea 50%, #ec4899 100%)",
-        },
-      },
-
-      easing: {
-        enter: "cubic-bezier(0.22, 1, 0.36, 1)",     // 干脆利落进入（参考视频主曲线）
-        elastic: "cubic-bezier(0.34, 1.56, 0.64, 1)", // 弹性回弹曲线（镜头 2 逐词缩小 & 镜头 5 点击回弹）
-        snap: "cubic-bezier(0.76, 0, 0.24, 1)",      // 快速缩放/横移转场
-        zoomOut: "cubic-bezier(0.7, 0, 0.84, 0)",    // 爆发式放大裁切
-        settle: "cubic-bezier(0.16, 1, 0.3, 1)",     // 合并归位与 Logo 展开定格
-      },
-
-      // 各分镜文案、字号（cqw = 画布宽度的 1%）、时间轴（毫秒）与位移参数
-      scenes: {
-        /**
-         * 镜头 1：开场直接呈现 ENVIRONMENTAL TECHNOLOGIES（无引号）
-         * 时间轴：0.00s - 1.98s
-         * 动效：键盘从左至右逐字输入推出（光标实时跟随）-> 居中停留 -> 0.80s 爆发放大并向边缘裁切转场
-         */
-        s1: {
-          word1: "ENVIRONMENTAL",
-          word2: "TECHNOLOGIES",
-          fontSize: "clamp(16px, 4.3cqw, 70px)",
-          start: 0,
-          typeEnd: 900,   // 逐字输入完成时间点（约 34ms/字，干脆利落）
-          holdEnd: 1180,  // 完整展示并伴随光标闪烁停留（0.28s）
-          end: 1980,      // 爆发放大退场耗时 0.80s（1.18s -> 1.98s）
-          zoomScale: 4.8,
-        },
-
-        /**
-         * 镜头 2：ENVIRONMENTAL 超大黑色字开场 -> STEWARDSHIP FOR MINING OPERATIONS 逐词增加、整体弹性缩小
-         * 时间轴：1.92s - 4.66s
-         * 动效：ENVIRONMENTAL 以 2.45x 超大黑色字居中弹入 -> 逐词依次加入并伴随弹性回弹阶梯缩小至 1x -> 停留阅读 -> 0.80s 整体向左快速移动推出
-         */
-        s2: {
-          words: [
-            { text: "ENVIRONMENTAL", accent: false },
-            { text: "STEWARDSHIP", accent: false },
-            { text: "FOR", accent: true },
-            { text: "MINING", accent: true },
-            { text: "OPERATIONS", accent: true },
-          ],
-          fontSize: "clamp(10px, 3.05cqw, 50px)",
-          start: 1920,
-          // 每一阶段对应的缩放倍率与居中补偿位移（每次加词时以弹性曲线缩小并始终保持视觉居中）
-          steps: [
-            { start: 1920, end: 2220, scale: 2.45, shiftX: "36.5%" }, // ENVIRONMENTAL 超大黑色字居中开场
-            { start: 2440, end: 2660, scale: 1.68, shiftX: "23.5%" }, // + STEWARDSHIP（弹性缩小）
-            { start: 2660, end: 2840, scale: 1.44, shiftX: "19.0%" }, // + FOR（弹性缩小）
-            { start: 2840, end: 3020, scale: 1.20, shiftX: "11.5%" }, // + MINING（弹性缩小）
-            { start: 3020, end: 3240, scale: 1.0,  shiftX: "0%"    }, // + OPERATIONS（弹性落位居中）
-          ],
-          holdEnd: 3860,
-          end: 4660,       // 整体向左快速推出退场耗时 0.80s（3.86s -> 4.66s）
-          exitX: "-115cqw",
-        },
-
-        /**
-         * 镜头 3（转场一）：FROM ASSESSMENT THROUGH
-         * 时间轴：4.59s - 6.31s（共 1.72s）
-         * 动效：紧凑粗体大字（ASSESSMENT 带液态绿渐变流动动效）整体自右侧 22cqw 迅速滑入居中 ->
-         *       居中蓄力停留 1.00s（4.93s -> 5.93s）-> 使用 snap 曲线整体向左快速滑出清场（0cqw -> -115cqw），并重叠 0.08s 切入镜头 4
-         */
-        s3: {
-          word1: "FROM",
-          word2: "ASSESSMENT", // 液态绿渐变流动强调
-          word3: "THROUGH",
-          fontSize: "clamp(18px, 5.8cqw, 96px)",
-          start: 4590,
-          inEnd: 4930,     // 整体自右侧 22cqw 迅速滑入居中（0.34s）
-          holdEnd: 5930,   // 居中蓄力停留 1.00s（4.93s -> 5.93s）
-          end: 6310,       // 使用 snap 曲线整体向左快速滑出清场（0.38s）
-          enterX: "22cqw",
-          exitX: "-115cqw",
-        },
-
-        /**
-         * 镜头 4（转场二）：RESTORATION AND CLOSURE
-         * 时间轴：6.23s - 7.46s（与镜头 3 重叠 0.08s）
-         * 动效：RESTORATION（液态绿渐变）底部裁切上推 -> AND（纯黑）衔接 -> CLOSURE（液态绿渐变）侧边切入 -> 缩放过渡至完整合并句
-         */
-        s4: {
-          word1: "RESTORATION", // 液态绿渐变强调
-          word2: "AND",         // 纯黑色文字
-          word3: "CLOSURE",     // 液态绿渐变强调
-          fontSize: "clamp(18px, 4.9cqw, 80px)",
-          start: 6230,
-          w1InEnd: 6530,
-          w2Start: 6370,
-          w2InEnd: 6630,
-          w3Start: 6450,
-          w3InEnd: 6750,
-          holdEnd: 7110,
-          end: 7460,
-        },
-
-        /**
-         * 镜头 5（合并完整整句 + 聚焦放大裁切 + 鼠标光标点击反馈）：FROM ASSESSMENT THROUGH RESTORATION AND CLOSURE
-         * 时间轴：7.39s - 9.51s（共 2.12s）
-         * 动效：
-         *   1) 进场合拢（7.39s - 7.87s）：左右两半句向中央合拢拼成完整一句
-         *   2) 合拢展示停留（7.87s - 8.37s，耗时 0.50s）：完整标语以 1x 比例清晰居中静置停留约 0.50s
-         *   3) 停留聚焦 & 鼠标光标点击（8.37s - 9.16s，耗时 0.79s）：整句持续放大并向左推近裁切左侧文字，
-         *      箭头鼠标光标自右侧滑入并对 RESTORATION AND CLOSURE 进行点击，单词触发点击弹性回弹反馈
-         *   4) 退场（9.16s - 9.51s）：整屏文字与光标同步向左快速滑出清场，衔接镜头 6
-         */
-        s5: {
-          leftWord1: "FROM",
-          leftAccent: "ASSESSMENT",    // 液态绿渐变强调
-          leftWord3: "THROUGH",        // 纯黑色文字
-          rightAccent1: "RESTORATION", // 液态绿渐变强调
-          rightWord2: "AND",           // 纯黑色文字
-          rightAccent2: "CLOSURE",     // 液态绿渐变强调
-          fontSize: "clamp(12px, 2.85cqw, 46px)",
-          start: 7390,
-          mergeEnd: 7870,
-          mergeHoldEnd: 8370,     // 完整合拢句居中静置停留 0.50s（7.87s -> 8.37s）
-          // 放大聚焦与鼠标光标点击阶段（8.37s -> 9.16s，耗时 0.79s）
-          cursorEnterStart: 8420,
-          cursorArriveTime: 8720,
-          clickDownTime: 8840,
-          clickUpTime: 8980,
-          holdEnd: 9160,
-          end: 9510,
-          leftStartX: "-14cqw",
-          rightStartX: "14cqw",
-          // 放大并左移以裁切左侧 FROM ASSESSMENT THROUGH，使 RESTORATION AND CLOSURE 居于视觉主体
-          zoomMidX: "-31cqw",
-          zoomMidScale: 1.72,
-          zoomEndX: "-35cqw",
-          zoomEndScale: 1.88,
-          exitX: "-115cqw",
-        },
-
-        /**
-         * 镜头 6（收尾定格）：品牌完整 Logo（渐变叶片 + 深绿 VIRIDANCE 字标 + 双行深灰副标题）
-         * 时间轴：9.44s - 10.25s（与镜头 5 重叠 0.07s）
-         * 动效：整体自下向上滚动入场（0.80s，经遮罩裁切）-> 到位即结束（10.25s）
-         */
-        s6: {
-          start: 9440,
-          scrollEnd: 10240,  // 整体上滚入场完成（0.80s：9.44s -> 10.24s）
-          end: 10250,
-        },
-      },
-    };
-
-    /**
-     * 现代简洁的箭头鼠标指针 SVG（黑底白描边，在浅绿液态背景与渐变文字上皆清晰锐利）
-     */
-    const MOUSE_CURSOR_SVG = `
-      <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path
-          d="M7.5 4.2 L7.5 31.8 L14.4 25.1 L19.6 35.6 L24.2 33.4 L19.0 23.0 L28.4 23.0 Z"
-          fill="#111111"
-          stroke="#ffffff"
-          stroke-width="2.4"
-          stroke-linejoin="round"
-        />
-      </svg>
-    `;
-
-    /* 完整品牌 Logo（去白底、按叶片/字标/副标题分组，供最后一拍分部件驱动） */
     const LOGO_SVG = `<svg viewBox="0 0 2128 748" fill="none" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="logo-svg">
 <defs>
 <linearGradient id="paint0_linear_155_83" x1="333" y1="65" x2="333" y2="612" gradientUnits="userSpaceOnUse">
@@ -917,799 +737,456 @@
 </g>
 </svg>`;
 
-    const stage = document.getElementById("stage");
-    const playPauseBtn = document.getElementById("playPauseBtn");
-    const progressSlider = document.getElementById("progressSlider");
-    const timeReadout = document.getElementById("timeReadout");
-    let activeAnimations = [];
-    let loopTimer = null;
-    let completionTimer = null;
-    let tickRafId = null;
-
-    // 暂停/播放与拖拽进度状态管理
-    let isPaused = false;
-    let isScrubbing = false;
-    let wasPlayingBeforeScrub = false;
-    let runStartTime = 0;
-    let pauseStartTime = 0;
-    let totalPausedMs = 0;
-
-    // 获取当前轮次已播放的净耗时（扣除暂停时长）
-    function getElapsed() {
-      const refNow = isPaused ? pauseStartTime : performance.now();
-      return Math.max(0, refNow - runStartTime - totalPausedMs);
-    }
-
-    // 同步进度条滑块位置与时间文字读数
-    function updateProgressUI(ms) {
-      const total = CONFIG.playback.totalDuration;
-      const clamped = Math.max(0, Math.min(total, ms));
-      const percent = total > 0 ? (clamped / total) * 100 : 0;
-
-      if (progressSlider) {
-        progressSlider.max = String(total);
-        progressSlider.value = String(Math.round(clamped));
-        progressSlider.style.setProperty("--progress", `${percent.toFixed(2)}%`);
-      }
-      if (timeReadout) {
-        timeReadout.textContent = `${(clamped / 1000).toFixed(2)}s / ${(total / 1000).toFixed(2)}s`;
-      }
-    }
-
-    // 根据任意时间点精确渲染镜头 1 的键盘逐字输入状态（支持任意拖拽回看）
-    function renderTypingAt(refs, elapsed) {
-      const { s1 } = CONFIG.scenes;
-      const fullText = `${s1.word1} ${s1.word2}`;
-      const w1Len = s1.word1.length;
-      const totalChars = fullText.length;
-      const typeDuration = Math.max(1, s1.typeEnd - s1.start);
-
-      if (elapsed <= s1.start) {
-        refs.s1.w1.textContent = "";
-        refs.s1.gap.style.display = "none";
-        refs.s1.w2.textContent = "";
-        refs.s1.cursor.style.opacity = "1";
-        refs.s1.cursor.classList.remove("is-accent", "is-blinking");
-        return;
-      }
-
-      const progress = Math.min(1, (elapsed - s1.start) / typeDuration);
-      if (progress < 1) {
-        const charCount = Math.floor(progress * totalChars);
-        refs.s1.w1.textContent = fullText.slice(0, Math.min(charCount, w1Len));
-        refs.s1.gap.style.display = charCount > w1Len ? "inline-block" : "none";
-        refs.s1.w2.textContent = charCount > w1Len + 1 ? fullText.slice(w1Len + 1, charCount) : "";
-        refs.s1.cursor.style.opacity = "1";
-        refs.s1.cursor.classList.toggle("is-accent", charCount > w1Len);
-        refs.s1.cursor.classList.remove("is-blinking");
-      } else {
-        refs.s1.w1.textContent = s1.word1;
-        refs.s1.gap.style.display = "inline-block";
-        refs.s1.w2.textContent = s1.word2;
-        refs.s1.cursor.classList.add("is-accent");
-
-        if (elapsed < s1.holdEnd - 40) {
-          refs.s1.cursor.style.opacity = "1";
-          refs.s1.cursor.classList.add("is-blinking");
-        } else {
-          refs.s1.cursor.classList.remove("is-blinking");
-          refs.s1.cursor.style.opacity = "0";
-        }
-      }
-    }
-
-    // 启动播放期间的逐帧同步循环（驱动打字机与底部进度条）
-    function startTickLoop(refs) {
-      if (tickRafId !== null) {
-        cancelAnimationFrame(tickRafId);
-        tickRafId = null;
-      }
-      const tick = () => {
-        if (isPaused) {
-          tickRafId = null;
-          return;
-        }
-        const elapsed = getElapsed();
-        renderTypingAt(refs, elapsed);
-        updateProgressUI(elapsed);
-
-        if (elapsed <= CONFIG.playback.totalDuration + 100) {
-          tickRafId = requestAnimationFrame(tick);
-        } else {
-          tickRafId = null;
-        }
-      };
-      tickRafId = requestAnimationFrame(tick);
-    }
-
-    // 精确跳转到指定毫秒位置（支持暂停与播放状态下任意拖拽）
-    function seekTo(refs, targetMs) {
-      const total = CONFIG.playback.totalDuration;
-      const clamped = Math.max(0, Math.min(total, targetMs));
-
-      if (isPaused) {
-        runStartTime = pauseStartTime - clamped;
-      } else {
-        runStartTime = performance.now() - clamped;
-      }
-      totalPausedMs = 0;
-
-      // 同步所有 Web Animations API 时间轴到目标毫秒帧
-      activeAnimations.forEach((anim) => {
-        anim.currentTime = clamped;
-        if (isPaused) {
-          anim.pause();
-        } else if (anim.playState === "paused") {
-          anim.play();
-        }
-      });
-
-      // 同步打字机文本与进度条读数
-      renderTypingAt(refs, clamped);
-      updateProgressUI(clamped);
-
-      // 若正在播放且开启循环，则根据新位置重算循环计时器
-      if (loopTimer) {
-        clearTimeout(loopTimer);
-        loopTimer = null;
-      }
-      if (!isPaused && CONFIG.playback.loop) {
-        const remaining = total + CONFIG.playback.loopPauseMs - clamped;
-        loopTimer = setTimeout(() => {
-          playTimeline(refs);
-        }, Math.max(0, remaining));
-      }
-    }
-
-    // 同步按钮图标与文案
-    function updatePlayPauseUI() {
-      if (!playPauseBtn) return;
-      if (isPaused) {
-        playPauseBtn.setAttribute("aria-label", "继续播放动画");
-        playPauseBtn.setAttribute("aria-pressed", "true");
-        playPauseBtn.innerHTML = `
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M4 2.6a.8.8 0 0 1 1.22-.68l8.4 5.4a.8.8 0 0 1 0 1.36l-8.4 5.4A.8.8 0 0 1 4 13.4V2.6Z"></path>
-          </svg>
-          <span>播放</span>
-        `;
-      } else {
-        playPauseBtn.setAttribute("aria-label", "暂停动画");
-        playPauseBtn.setAttribute("aria-pressed", "false");
-        playPauseBtn.innerHTML = `
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <rect x="3" y="2.5" width="3.5" height="11" rx="1"></rect>
-            <rect x="9.5" y="2.5" width="3.5" height="11" rx="1"></rect>
-          </svg>
-          <span>暂停</span>
-        `;
-      }
-    }
-
-    // 暂停所有动效（时间轴、打字机、循环计时器及 CSS 流动效果）
-    function pauseTimeline() {
-      if (isPaused) return;
-      isPaused = true;
-      pauseStartTime = performance.now();
-      document.body.classList.add("is-paused");
-
-      activeAnimations.forEach((anim) => {
-        if (anim.playState === "running") {
-          anim.pause();
-        }
-      });
-
-      if (tickRafId !== null) {
-        cancelAnimationFrame(tickRafId);
-        tickRafId = null;
-      }
-
-      if (loopTimer) {
-        clearTimeout(loopTimer);
-        loopTimer = null;
-      }
-
-      updatePlayPauseUI();
-    }
-
-    // 从暂停位置精确恢复播放
-    function resumeTimeline(refs) {
-      if (!isPaused) return;
-
-      // 若已停在末尾，点击播放直接从头重播
-      if (getElapsed() >= CONFIG.playback.totalDuration - 20) {
-        playTimeline(refs);
-        return;
-      }
-
-      totalPausedMs += performance.now() - pauseStartTime;
-      isPaused = false;
-      document.body.classList.remove("is-paused");
-
-      const currentMs = getElapsed();
-      activeAnimations.forEach((anim) => {
-        anim.currentTime = currentMs;
-        anim.play();
-      });
-
-      startTickLoop(refs);
-
-      if (CONFIG.playback.loop) {
-        const remaining =
-          CONFIG.playback.totalDuration + CONFIG.playback.loopPauseMs - currentMs;
-        if (remaining <= 0) {
-          playTimeline(refs);
-        } else {
-          loopTimer = setTimeout(() => {
-            playTimeline(refs);
-          }, remaining);
-        }
-      }
-
-      updatePlayPauseUI();
-    }
-
-    // 切换暂停 / 播放
-    function togglePlayPause(refs) {
-      if (isPaused) {
-        resumeTimeline(refs);
-      } else {
-        pauseTimeline();
-      }
-    }
-
-    // 应用配色变量
-    function applyTheme() {
-      const root = document.documentElement.style;
-      root.setProperty("--bg-color", CONFIG.colors.background);
-      root.setProperty("--text-color", CONFIG.colors.text);
-      root.setProperty("--accent-gradient", CONFIG.colors.accentGradient);
-      root.setProperty("--logo-title-color", CONFIG.colors.logoTitle);
-      root.setProperty("--logo-sub-color", CONFIG.colors.logoSub);
-    }
-
-    // 工具函数：创建 DOM 节点
-    function el(tag, className, text) {
-      const node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text !== undefined) node.textContent = text;
-      return node;
-    }
-
     /**
-     * 核心时间轴驱动函数（基于 Web Animations API）
-     * 使用 fill: "both" 确保延迟起播前始终保持首帧状态，彻底杜绝闪现
+     * 现代简洁的箭头鼠标指针 SVG
      */
-    function animateTimeline(element, points) {
-      if (!points || points.length < 2) return null;
-      const start = points[0].t;
-      const end = points[points.length - 1].t;
-      const duration = Math.max(1, end - start);
-
-      const keyframes = points.map((p) => {
-        const frame = {
-          offset: (p.t - start) / duration,
-          opacity: p.opacity,
-          transform: p.transform,
-        };
-        if (p.clipPath !== undefined) frame.clipPath = p.clipPath;
-        if (p.easing) frame.easing = p.easing;
-        return frame;
-      });
-
-      const anim = element.animate(keyframes, {
-        delay: start,
-        duration,
-        fill: "both",
-      });
-
-      activeAnimations.push(anim);
-      return anim;
-    }
-
-    // 构建真实 DOM 文本结构
-    function buildScenes() {
-      stage.innerHTML = "";
-      const { s1, s2, s3, s4, s5 } = CONFIG.scenes;
-      const refs = {};
-
-      /* ---------------- 镜头 1：ENVIRONMENTAL TECHNOLOGIES（键盘逐字输入 + 跟随光标） ---------------- */
-      const sc1 = el("div", "scene scene-1");
-      const sc1Wrap = el("div", "typing-stage");
-      sc1Wrap.style.fontSize = s1.fontSize;
-
-      // 隐形占位行，确保整句始终居中且左侧起点固定
-      const sc1Ghost = el("div", "line typing-ghost");
-      sc1Ghost.setAttribute("aria-hidden", "true");
-      sc1Ghost.append(
-        el("span", "word", s1.word1),
-        el("span", "gap"),
-        el("span", "word", s1.word2)
-      );
-
-      // 实时逐字输出层
-      const sc1Live = el("div", "line typing-live");
-      const sc1W1 = el("span", "word", "");
-      const sc1Gap = el("span", "gap");
-      sc1Gap.style.display = "none";
-      const sc1W2 = el("span", "word accent", "");
-      const sc1Cursor = el("span", "typing-cursor");
-      sc1Live.append(sc1W1, sc1Gap, sc1W2, sc1Cursor);
-
-      sc1Wrap.append(sc1Ghost, sc1Live);
-      sc1.appendChild(sc1Wrap);
-      stage.appendChild(sc1);
-      refs.s1 = { scene: sc1, w1: sc1W1, gap: sc1Gap, w2: sc1W2, cursor: sc1Cursor };
-
-      /* ---------------- 镜头 2：ENVIRONMENTAL STEWARDSHIP FOR MINING OPERATIONS ---------------- */
-      const sc2 = el("div", "scene scene-2");
-      const sc2Line = el("div", "line");
-      sc2Line.style.fontSize = s2.fontSize;
-
-      const sc2Words = [];
-      s2.words.forEach((item, idx) => {
-        if (idx > 0) sc2Line.appendChild(el("span", "gap"));
-        const wordEl = el("span", item.accent ? "word accent" : "word", item.text);
-        sc2Line.appendChild(wordEl);
-        sc2Words.push(wordEl);
-      });
-
-      sc2.appendChild(sc2Line);
-      stage.appendChild(sc2);
-      refs.s2 = { scene: sc2, line: sc2Line, words: sc2Words };
-
-      /* ---------------- 镜头 3（转场一）：FROM ASSESSMENT THROUGH（ASSESSMENT 带液态绿渐变流动动效） ---------------- */
-      const sc3 = el("div", "scene scene-3");
-      const sc3Line = el("div", "line");
-      sc3Line.style.fontSize = s3.fontSize;
-      sc3Line.append(
-        el("span", "word", s3.word1),
-        el("span", "gap"),
-        el("span", "word accent", s3.word2),
-        el("span", "gap"),
-        el("span", "word", s3.word3)
-      );
-      sc3.appendChild(sc3Line);
-      stage.appendChild(sc3);
-      refs.s3 = { scene: sc3, line: sc3Line };
-
-      /* ---------------- 镜头 4（转场二）：RESTORATION AND CLOSURE（RESTORATION 与 CLOSURE 均为液态绿渐变） ---------------- */
-      const sc4 = el("div", "scene scene-4");
-      const sc4Line = el("div", "line");
-      sc4Line.style.fontSize = s4.fontSize;
-
-      const w1Wrap = el("span", "clip-wrap");
-      const sc4W1 = el("span", "word accent", s4.word1);
-      w1Wrap.appendChild(sc4W1);
-
-      const sc4W2 = el("span", "word", s4.word2);
-      const sc4W3 = el("span", "word accent", s4.word3);
-
-      sc4Line.append(w1Wrap, el("span", "gap"), sc4W2, el("span", "gap"), sc4W3);
-      sc4.appendChild(sc4Line);
-      stage.appendChild(sc4);
-      refs.s4 = { scene: sc4, w1: sc4W1, w2: sc4W2, w3: sc4W3 };
-
-      /* ---------------- 镜头 5（合并完整整句 + 0.5s 停留 + 放大裁切 + 鼠标光标点击反馈） ---------------- */
-      const sc5 = el("div", "scene scene-5");
-      const sc5Line = el("div", "line");
-      sc5Line.style.fontSize = s5.fontSize;
-
-      const sc5Left = el("span", "phrase");
-      sc5Left.append(
-        el("span", "word", s5.leftWord1),
-        el("span", "gap"),
-        el("span", "word accent", s5.leftAccent),
-        el("span", "gap"),
-        el("span", "word", s5.leftWord3)
-      );
-
-      const sc5Right = el("span", "phrase");
-      sc5Right.append(
-        el("span", "word accent", s5.rightAccent1),
-        el("span", "gap"),
-        el("span", "word", s5.rightWord2),
-        el("span", "gap"),
-        el("span", "word accent", s5.rightAccent2)
-      );
-
-      sc5Line.append(sc5Left, el("span", "gap"), sc5Right);
-
-      // 箭头鼠标光标层（叠放于镜头 5 文字之上）
-      const sc5Cursor = el("div", "mouse-cursor");
-      sc5Cursor.innerHTML = MOUSE_CURSOR_SVG;
-
-      sc5.append(sc5Line, sc5Cursor);
-      stage.appendChild(sc5);
-      refs.s5 = { scene: sc5, line: sc5Line, left: sc5Left, right: sc5Right, cursor: sc5Cursor };
-
-      /* ---------------- 镜头 6：最终品牌 Logo（叶片舒展 + 字标上推 + 副标题淡入 + 定格） ---------------- */
-      const sc6 = el("div", "scene scene-6");
-      const sc6Mask = el("div", "logo-scroll-mask");
-      const sc6Wrap = el("div", "logo-stage-wrap");
-      const sc6Embed = el("div", "logo-embed");
-      sc6Embed.innerHTML = LOGO_SVG;
-      sc6Wrap.appendChild(sc6Embed);
-      sc6Mask.appendChild(sc6Wrap);
-      sc6.appendChild(sc6Mask);
-      stage.appendChild(sc6);
-      refs.s6 = {
-        scene: sc6,
-        wrap: sc6Wrap,
-        embed: sc6Embed,
-        leaf: sc6Embed.querySelector(".logo-leaf"),
-        wordmark: sc6Embed.querySelector(".logo-wordmark"),
-        tagline1: sc6Embed.querySelector(".logo-tagline-1"),
-        tagline2: sc6Embed.querySelector(".logo-tagline-2"),
-      };
-
-      /* ---------------- 静态降级层（prefers-reduced-motion 专用） ---------------- */
-      const scReduced = el("div", "scene scene-reduced");
-      const reducedEmbed = el("div", "logo-embed");
-      reducedEmbed.innerHTML = LOGO_SVG;
-      scReduced.appendChild(reducedEmbed);
-      stage.appendChild(scReduced);
-
-      return refs;
-    }
-
-    // 清理现有动画
-    function clearAnimations() {
-      if (loopTimer) {
-        clearTimeout(loopTimer);
-        loopTimer = null;
-      }
-      if (completionTimer) {
-        clearTimeout(completionTimer);
-        completionTimer = null;
-      }
-      if (tickRafId !== null) {
-        cancelAnimationFrame(tickRafId);
-        tickRafId = null;
-      }
-      activeAnimations.forEach((a) => a.cancel());
-      activeAnimations = [];
-    }
+    const MOUSE_CURSOR_SVG = `
+      <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path
+          d="M7.5 4.2 L7.5 31.8 L14.4 25.1 L19.6 35.6 L24.2 33.4 L19.0 23.0 L28.4 23.0 Z"
+          fill="#111111"
+          stroke="#ffffff"
+          stroke-width="2.4"
+          stroke-linejoin="round"
+        />
+      </svg>
+    `;
 
     /**
      * =========================================================================
-     * 播放完整时间轴（总计约 10.25 秒）
+     * 全局紧凑时间轴配置（单轮精确 6.28 秒 = 6280ms）
      * =========================================================================
      */
-    function playTimeline(refs) {
-      clearAnimations();
+    const CONFIG = {
+      totalDuration: 6280,
+      loopPause: 800,
+      loop: false,
+      s2Text: {
+        word1: "Beyond",
+        word2: "Compliance",
+        cIndexInWord2: 0,
+      },
+      fold: {
+        foldAngle: 92,
+        duration: 520,
+        stagger: 34,
+        creaseShading: 0.42,
+      },
+      time: {
+        logoStart: 0,
+        logoFadePeak: 540,
+        logoFadeInEnd: 820,
+        logoSettle: 1020,
+        cursorIn: 1100,
+        cursorArrive: 1420,
+        clickDown: 1520,
+        clickRelease: 1620,
+        cursorOut: 1820,
+        logoOut: 1840,
 
-      // 重置暂停状态与本轮起始时间戳
-      isPaused = false;
-      totalPausedMs = 0;
-      pauseStartTime = 0;
-      runStartTime = performance.now();
-      document.body.classList.remove("is-paused");
-      updatePlayPauseUI();
-      updateProgressUI(0);
-      renderTypingAt(refs, 0);
+        s2Start: 1940,
+        s2UnfoldEnd: 3004,
+        s2FadeOutEnd: 3244,
 
-      // 若用户系统开启减少动态效果，直接静态展示核心完整标语。
-      // 嵌入主页时父级已统一判定过 reduced-motion（forceMotion=1），此处遵从父级判定，
-      // 避免 iframe 与主文档的媒体查询结果不一致导致开场被瞬间跳过。
-      var forceMotion = new URLSearchParams(location.search).get("forceMotion") === "1";
-      if (!forceMotion && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        notifyParent("complete");
-        return;
+        bridgeStart: 3004,
+        bridgeArrive: 3584,
+        bridgeEnd: 3684,
+
+        s3Start: 3584,
+        s3CreatingInEnd: 3784,
+        s3Step1Start: 3844,
+        s3Step1End: 4064,
+        s3Step2Start: 4064,
+        s3Step2End: 4284,
+      },
+      easing: {
+        enter: "cubic-bezier(0.22, 1, 0.36, 1)",
+        power3Out: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+        elastic: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        snapIn: "cubic-bezier(0.22, 1.05, 0.36, 1)",
+      },
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const stage = $("stage");
+    const slider = $("progressSlider");
+    const button = $("playPauseBtn");
+    const readout = $("timeReadout");
+    const forceMotion = new URLSearchParams(location.search).get("forceMotion") === "1";
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const { time: t, totalDuration: duration, easing: E } = CONFIG;
+
+    $("logoBrand").innerHTML = LOGO_SVG;
+    $("motionCursor").innerHTML = MOUSE_CURSOR_SVG;
+
+    // 构建第二幕 FoldText 字符片段
+    let s2PieceEls = [];
+    let s2FirstCEl = null;
+    (function buildFoldSegments() {
+      const { word1, word2, cIndexInWord2 } = CONFIG.s2Text;
+      const createSegment = (char, isAccent) => {
+        const seg = document.createElement("span");
+        seg.className = "fold-text-segment";
+        const piece = document.createElement("span");
+        piece.className = isAccent ? "fold-text-piece accent" : "fold-text-piece";
+        piece.dataset.foldText = char;
+        piece.textContent = char;
+        seg.appendChild(piece);
+        s2PieceEls.push(piece);
+        return { seg, piece };
+      };
+
+      for (const ch of word1) {
+        $("s2W1").appendChild(createSegment(ch, false).seg);
       }
-
-      const { s1, s2, s3, s4, s5, s6 } = CONFIG.scenes;
-      const E = CONFIG.easing;
-
-      /* -----------------------------------------------------------------------
-       * [0.00s - 1.98s] 镜头 1：ENVIRONMENTAL TECHNOLOGIES
-       * 键盘从左至右逐字输入推出（光标实时跟随）-> 短暂停留 -> 0.80s 爆发放大裁切退场
-       * ----------------------------------------------------------------------- */
-      animateTimeline(refs.s1.scene, [
-        { t: s1.start, opacity: 1, transform: "scale(1)", easing: "linear" },
-        { t: s1.holdEnd, opacity: 1, transform: "scale(1)", easing: E.zoomOut },
-        { t: s1.end - 120, opacity: 1, transform: `scale(${(s1.zoomScale * 0.78).toFixed(2)})`, easing: "linear" },
-        { t: s1.end, opacity: 0, transform: `scale(${s1.zoomScale})` },
-      ]);
-
-      /* -----------------------------------------------------------------------
-       * [1.92s - 4.66s] 镜头 2：ENVIRONMENTAL STEWARDSHIP FOR MINING OPERATIONS
-       * ENVIRONMENTAL 2.45x 超大黑字弹入居中 -> 后续 4 词逐词加入并伴随弹性缩小 ->
-       * 完整句居中停留阅读 -> 0.80s 保持原比例整体向左快速移动推出
-       * ----------------------------------------------------------------------- */
-      animateTimeline(refs.s2.scene, [
-        { t: s2.start, opacity: 0, transform: "translateX(0cqw)", easing: E.enter },
-        { t: s2.start + 160, opacity: 1, transform: "translateX(0cqw)", easing: "linear" },
-        { t: s2.holdEnd, opacity: 1, transform: "translateX(0cqw)", easing: E.snap },
-        { t: s2.end, opacity: 0, transform: `translateX(${s2.exitX})` },
-      ]);
-
-      // 整句阶梯弹性缩小并实时居中补偿
-      const st = s2.steps;
-      animateTimeline(refs.s2.line, [
-        {
-          t: st[0].start,
-          opacity: 1,
-          transform: `scale(${(st[0].scale * 0.82).toFixed(2)}) translateX(${st[0].shiftX})`,
-          easing: E.elastic,
-        },
-        {
-          t: st[0].end,
-          opacity: 1,
-          transform: `scale(${st[0].scale}) translateX(${st[0].shiftX})`,
-          easing: "linear",
-        },
-        {
-          t: st[1].start,
-          opacity: 1,
-          transform: `scale(${st[0].scale}) translateX(${st[0].shiftX})`,
-          easing: E.elastic,
-        },
-        {
-          t: st[1].end,
-          opacity: 1,
-          transform: `scale(${st[1].scale}) translateX(${st[1].shiftX})`,
-          easing: E.elastic,
-        },
-        {
-          t: st[2].end,
-          opacity: 1,
-          transform: `scale(${st[2].scale}) translateX(${st[2].shiftX})`,
-          easing: E.elastic,
-        },
-        {
-          t: st[3].end,
-          opacity: 1,
-          transform: `scale(${st[3].scale}) translateX(${st[3].shiftX})`,
-          easing: E.elastic,
-        },
-        {
-          t: st[4].end,
-          opacity: 1,
-          transform: `scale(${st[4].scale}) translateX(${st[4].shiftX})`,
-          easing: "linear",
-        },
-        {
-          t: s2.end,
-          opacity: 1,
-          transform: `scale(${st[4].scale}) translateX(${st[4].shiftX})`,
-        },
-      ]);
-
-      // 镜头 2 各词依次从右侧弹入（首词 ENVIRONMENTAL 直接随镜头开场呈现）
-      refs.s2.words.forEach((wordEl, idx) => {
-        if (idx === 0) {
-          animateTimeline(wordEl, [
-            { t: st[0].start, opacity: 1, transform: "translateX(0) scale(1)" },
-            { t: s2.end, opacity: 1, transform: "translateX(0) scale(1)" },
-          ]);
-        } else {
-          const step = st[idx];
-          animateTimeline(wordEl, [
-            { t: step.start, opacity: 0, transform: "translateX(2.6cqw) scale(0.9)", easing: E.elastic },
-            { t: step.end, opacity: 1, transform: "translateX(0) scale(1)" },
-          ]);
-        }
+      Array.from(word2).forEach((ch, idx) => {
+        const { seg, piece } = createSegment(ch, true);
+        if (idx === cIndexInWord2) s2FirstCEl = piece;
+        $("s2W2").appendChild(seg);
       });
+    })();
 
-      /* -----------------------------------------------------------------------
-       * [4.59s - 6.31s] 镜头 3（转场一）：FROM ASSESSMENT THROUGH
-       * 紧凑粗体大字（ASSESSMENT 液态绿渐变流动）整体自右侧 22cqw 迅速滑入居中 ->
-       * 蓄力停留 1.00s（4.93s - 5.93s）-> 使用 snap 曲线整体向左快速滑出清场（0cqw -> -115cqw）
-       * ----------------------------------------------------------------------- */
-      animateTimeline(refs.s3.scene, [
-        { t: s3.start, opacity: 0, transform: `translateX(${s3.enterX})`, easing: E.enter },
-        { t: s3.inEnd, opacity: 1, transform: "translateX(0cqw)", easing: "linear" },
-        { t: s3.holdEnd, opacity: 1, transform: "translateX(0cqw)", easing: E.snap },
-        { t: s3.end, opacity: 0, transform: `translateX(${s3.exitX})` },
-      ]);
+    // 构建无障碍静态降级视图（独立命名 SVG ID 避免冲突）
+    (function buildStaticLockup() {
+      const staticLogo = document.createElement("div");
+      staticLogo.className = "brand";
+      staticLogo.innerHTML = LOGO_SVG;
+      for (const node of staticLogo.querySelectorAll("[id]")) {
+        const id = node.id;
+        for (const ref of staticLogo.querySelectorAll("*")) {
+          for (const attr of [...ref.attributes]) {
+            const value = attr.value.replaceAll(`url(#${id})`, `url(#static-${id})`);
+            if (value !== attr.value || attr.value === `#${id}`) {
+              ref.setAttributeNS(
+                attr.namespaceURI,
+                attr.name,
+                attr.value === `#${id}` ? `#static-${id}` : value
+              );
+            }
+          }
+        }
+        node.id = `static-${id}`;
+      }
+      const line1 = document.createElement("div");
+      line1.className = "line";
+      line1.innerHTML = `<span>Beyond</span><span class="gap"></span><span class="accent">Compliance</span>`;
+      const line2 = document.createElement("div");
+      line2.className = "line";
+      line2.innerHTML = `<span class="accent">Creating</span><span class="gap"></span><span>Lasting</span><span class="gap"></span><span>Ecosystem</span>`;
+      $("staticLockup").append(staticLogo, line1, line2);
+    })();
 
-      /* -----------------------------------------------------------------------
-       * [6.23s - 7.46s] 镜头 4（转场二）：RESTORATION AND CLOSURE
-       * RESTORATION & CLOSURE 均为液态绿渐变 -> 分词错峰切入 -> 轻微收缩过渡到完整合并句
-       * ----------------------------------------------------------------------- */
-      animateTimeline(refs.s4.scene, [
-        { t: s4.start, opacity: 1, transform: "scale(1)", easing: "linear" },
-        { t: s4.holdEnd, opacity: 1, transform: "scale(1)", easing: E.snap },
-        { t: s4.end, opacity: 0, transform: "scale(0.84)" },
-      ]);
+    // 全局时间轴队列与布局测量缓存
+    let cue = [];
+    let layout = {
+      dx0: 0,
+      dx1: 0,
+      fromLeft: 0,
+      fromTop: 0,
+      toX: 0,
+      toScale: 1,
+    };
 
-      animateTimeline(refs.s4.w1, [
-        { t: s4.start, opacity: 0, transform: "translateY(110%)", easing: E.enter },
-        { t: s4.w1InEnd, opacity: 1, transform: "translateY(0)" },
-      ]);
+    let playhead = 0;
+    let origin = 0;
+    let raf = null;
+    let playing = false;
+    let scrubbing = false;
+    let resumeAfterScrub = false;
 
-      animateTimeline(refs.s4.w2, [
-        { t: s4.w2Start, opacity: 0, transform: "scale(0.85)", easing: E.enter },
-        { t: s4.w2InEnd, opacity: 1, transform: "scale(1)" },
-      ]);
-
-      animateTimeline(refs.s4.w3, [
-        { t: s4.w3Start, opacity: 0, transform: "translateX(6cqw) scale(1.08)", easing: E.enter },
-        { t: s4.w3InEnd, opacity: 1, transform: "translateX(0) scale(1)" },
-      ]);
-
-      /* -----------------------------------------------------------------------
-       * [7.39s - 9.51s] 镜头 5（合并完整整句 + 0.5s 停留 + 聚焦放大裁切 + 鼠标光标点击反馈）
-       * 1) 7.39s - 7.87s：左右两半句向中央合拢拼成完整一句
-       * 2) 7.87s - 8.37s：合拢后完整句子以 1x 比例清晰居中静置停留约 0.50s
-       * 3) 8.37s - 9.16s：RESTORATION AND CLOSURE 持续放大并向左平移裁切左侧文字，
-       *                   箭头鼠标光标自右侧滑入并对 RESTORATION AND CLOSURE 进行点击，单词触发弹性回弹反馈
-       * 4) 9.16s - 9.51s：整屏文字与光标同步向左快速滑出退场，衔接镜头 6
-       * ----------------------------------------------------------------------- */
-      animateTimeline(refs.s5.scene, [
-        { t: s5.start, opacity: 0, transform: "translateX(0cqw) scale(1.06)", easing: E.settle },
-        { t: s5.mergeEnd, opacity: 1, transform: "translateX(0cqw) scale(1)", easing: "linear" },
-        { t: s5.holdEnd, opacity: 1, transform: "translateX(0cqw) scale(1)", easing: E.snap },
-        { t: s5.end, opacity: 0, transform: `translateX(${s5.exitX}) scale(1)` },
-      ]);
-
-      // 合拢后先停留 0.50s，随后持续放大并向左平移，自然裁切左侧 FROM ASSESSMENT THROUGH，聚焦 RESTORATION AND CLOSURE
-      animateTimeline(refs.s5.line, [
-        { t: s5.start, opacity: 1, transform: "translateX(0cqw) scale(1)", easing: "linear" },
-        { t: s5.mergeHoldEnd, opacity: 1, transform: "translateX(0cqw) scale(1)", easing: E.enter },
-        {
-          t: s5.cursorArriveTime,
-          opacity: 1,
-          transform: `translateX(${s5.zoomMidX}) scale(${s5.zoomMidScale})`,
-          easing: "linear",
-        },
-        {
-          t: s5.holdEnd,
-          opacity: 1,
-          transform: `translateX(${s5.zoomEndX}) scale(${s5.zoomEndScale})`,
-          easing: "linear",
-        },
-        {
-          t: s5.end,
-          opacity: 1,
-          transform: `translateX(${s5.zoomEndX}) scale(${s5.zoomEndScale})`,
-        },
-      ]);
-
-      // 左半句（FROM ASSESSMENT THROUGH）合拢归位
-      animateTimeline(refs.s5.left, [
-        { t: s5.start, opacity: 0, transform: `translateX(${s5.leftStartX})`, easing: E.settle },
-        { t: s5.mergeEnd, opacity: 1, transform: "translateX(0)" },
-      ]);
-
-      // 右半句（RESTORATION AND CLOSURE）：合拢归位 -> 0.5s 停留 -> 受鼠标光标点击压缩微缩 -> 弹性回弹反馈
-      animateTimeline(refs.s5.right, [
-        { t: s5.start, opacity: 0, transform: `translateX(${s5.rightStartX}) scale(1)`, easing: E.settle },
-        { t: s5.mergeEnd, opacity: 1, transform: "translateX(0) scale(1)", easing: "linear" },
-        { t: s5.cursorArriveTime, opacity: 1, transform: "translateX(0) scale(1)", easing: "ease-in" },
-        { t: s5.clickDownTime, opacity: 1, transform: "translateX(0) scale(0.91)", easing: E.elastic },
-        { t: s5.clickUpTime + 70, opacity: 1, transform: "translateX(0) scale(1.06)", easing: E.settle },
-        { t: s5.holdEnd, opacity: 1, transform: "translateX(0) scale(1)" },
-      ]);
-
-      // 箭头鼠标光标：从屏幕右侧滑入停在 RESTORATION AND CLOSURE 上 -> 执行点击按下与抬起 -> 随画面退场
-      animateTimeline(refs.s5.cursor, [
-        {
-          t: s5.cursorEnterStart,
-          opacity: 0,
-          transform: "translate(52cqw, 16cqw) scale(1.06)",
-          easing: E.enter,
-        },
-        {
-          t: s5.cursorEnterStart + 90,
-          opacity: 1,
-          transform: "translate(34cqw, 11cqw) scale(1.03)",
-          easing: E.enter,
-        },
-        {
-          t: s5.cursorArriveTime,
-          opacity: 1,
-          transform: "translate(10cqw, 2.6cqw) scale(1)",
-          easing: "ease-in",
-        },
-        {
-          t: s5.clickDownTime,
-          opacity: 1,
-          transform: "translate(9.7cqw, 3.1cqw) scale(0.84)",
-          easing: E.elastic,
-        },
-        {
-          t: s5.clickUpTime,
-          opacity: 1,
-          transform: "translate(10cqw, 2.6cqw) scale(1.02)",
-          easing: "linear",
-        },
-        {
-          t: s5.holdEnd,
-          opacity: 1,
-          transform: "translate(10cqw, 2.6cqw) scale(1)",
-          easing: "linear",
-        },
-        {
-          t: s5.end,
-          opacity: 0,
-          transform: "translate(10cqw, 2.6cqw) scale(1)",
-        },
-      ]);
-
-      /* -----------------------------------------------------------------------
-       * [9.44s - 10.25s] 镜头 6：最终品牌 Logo 收尾
-       * 整体自下向上滚动入场（0.80s，经 .logo-scroll-mask 裁切）-> 到位即本轮结束
-       * ----------------------------------------------------------------------- */
-      // 镜头容器：负责与镜头 5 的透明度交接（fill:both 杜绝闪现）
-      animateTimeline(refs.s6.scene, [
-        { t: s6.start, opacity: 1, transform: "scale(1)", easing: "linear" },
-        { t: s6.end, opacity: 1, transform: "scale(1)" },
-      ]);
-
-      // 整体包裹层：从遮罩下方滚动上入（0.80s），到位后纯定格
-      animateTimeline(refs.s6.wrap, [
-        { t: s6.start, opacity: 1, transform: "translateY(115%)", easing: E.enter },
-        { t: s6.scrollEnd, opacity: 1, transform: "translateY(0)" },
-        { t: s6.end, opacity: 1, transform: "translateY(0)" },
-      ]);
-
-      // 启动逐帧同步（驱动镜头 1 打字机；控制栏已移除，进度 UI 仅作空操作）
-      startTickLoop(refs);
-
-      // 前置开场形态：Web Animations 为异步播放，需在总时长到点后再通知父页面淡出，
-      // 而非本函数同步结束时立即通知（否则开场会被瞬间跳过）。
-      if (completionTimer) clearTimeout(completionTimer);
-      completionTimer = setTimeout(function () {
-        notifyParent("complete");
-      }, CONFIG.playback.totalDuration);
+    function track(element, frames) {
+      const start = frames[0][0];
+      const length = Math.max(1, frames.at(-1)[0] - start);
+      const animation = element.animate(
+        frames.map(([ms, styles, easing = "linear"]) => ({
+          ...styles,
+          offset: (ms - start) / length,
+          easing,
+        })),
+        { duration: length, fill: "both" }
+      );
+      animation.pause();
+      cue.push({ animation, start });
+      return animation;
     }
 
-    /** 通知宿主页面（供淡出 / 揭示 Hero 使用），独立预览时无父页面则静默 */
+    function measureLayout() {
+      const stageRect = stage.getBoundingClientRect();
+      if (!stageRect.width || !stageRect.height) return;
+
+      const s3Line = $("s3Line");
+      const s3W0 = $("s3W0");
+      const s3W1 = $("s3W1");
+      const s3FirstC = $("s3FirstC");
+      const bridge = $("letterBridge");
+
+      const lineCenterX = s3Line.offsetWidth / 2;
+      const dx0 = lineCenterX - (s3W0.offsetLeft + s3W0.offsetWidth / 2);
+      const dx1 = lineCenterX - (s3W0.offsetLeft + s3W1.offsetLeft + s3W1.offsetWidth) / 2;
+
+      const cAnchor = s2FirstCEl ? s2FirstCEl.parentElement : $("s2W2");
+      const fromRect = cAnchor.getBoundingClientRect();
+      const fromLeft = fromRect.left - stageRect.left;
+      const fromTop = fromRect.top - stageRect.top;
+
+      const relX = s3FirstC.offsetLeft - lineCenterX;
+      const targetLeft = stageRect.width / 2 + relX + dx0;
+      const s2FontPx = parseFloat(getComputedStyle(cAnchor).fontSize) || 1;
+      const s3FontPx = parseFloat(getComputedStyle(s3FirstC).fontSize) || 1;
+
+      layout = {
+        dx0,
+        dx1,
+        fromLeft,
+        fromTop,
+        toX: targetLeft - fromLeft,
+        toScale: s3FontPx / s2FontPx,
+      };
+
+      bridge.style.setProperty("--glyph-left", `${fromLeft.toFixed(2)}px`);
+      bridge.style.setProperty("--glyph-top", `${fromTop.toFixed(2)}px`);
+    }
+
+    /**
+     * 构建全部 3 个镜头与跨镜桥梁的 Web Animations 时间轴
+     */
+    function buildTimeline() {
+      for (const item of cue) item.animation.cancel();
+      cue = [];
+      measureLayout();
+
+      const { dx0, dx1, toX, toScale } = layout;
+
+      // 镜头 1：Logo 呼吸感渐现 + 光标点击退场
+      track($("logoScene"), [
+        [t.logoStart, { opacity: 0 }, E.enter],
+        [t.logoFadePeak, { opacity: 1 }],
+        [t.clickRelease, { opacity: 1 }, "ease-out"],
+        [t.logoOut, { opacity: 0 }],
+      ]);
+
+      track($("logoWrap"), [
+        [t.logoStart, { transform: "translate3d(0, 0, 0) scale(0.96)" }, E.enter],
+        [t.logoFadePeak, { transform: "translate3d(0, 0, 0) scale(1.16)" }, "cubic-bezier(0.33, 0, 0.2, 1)"],
+        [t.logoFadeInEnd, { transform: "translate3d(0, 0, 0) scale(1)" }],
+        [t.cursorArrive, { transform: "translate3d(0, 0, 0) scale(1)" }, "ease-in"],
+        [t.clickDown, { transform: "translate3d(0, 0.8cqw, 0) scale(0.91, 0.88)" }, E.elastic],
+        [t.clickRelease, { transform: "translate3d(0, 0, 0) scale(1.03)" }, "ease-out"],
+        [t.logoOut, { transform: "translate3d(0, 0, 0) scale(1)" }],
+      ]);
+
+      track($("motionCursor"), [
+        [t.cursorIn, { transform: "translate3d(44cqw, 16cqw, 0) rotate(0deg) scale(1)", opacity: 0 }, E.enter],
+        [t.cursorArrive, { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", opacity: 1 }, "ease-in"],
+        [t.clickDown, { transform: "translate3d(0, 0.4cqw, 0) rotate(-8deg) scale(0.76)", opacity: 1 }, E.elastic],
+        [t.clickRelease, { transform: "translate3d(0, 0, 0) rotate(4deg) scale(1.06)", opacity: 1 }, "ease-out"],
+        [t.cursorOut, { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", opacity: 0 }],
+      ]);
+
+      // 镜头 2：Beyond Compliance 3D 折纸逐字展开 + 直接衔接退场
+      track($("secondScene"), [
+        [t.s2Start - 1, { opacity: 0 }],
+        [t.s2Start, { opacity: 1 }],
+        [t.s2FadeOutEnd, { opacity: 1 }],
+        [t.s2FadeOutEnd + 1, { opacity: 0 }],
+      ]);
+
+      const { foldAngle, duration: foldDur, stagger: foldStagger, creaseShading } = CONFIG.fold;
+      s2PieceEls.forEach((piece, index) => {
+        const isFirstC = piece === s2FirstCEl;
+        const charStart = t.s2Start + index * foldStagger;
+        const charEnd = charStart + foldDur;
+        const frames = [
+          [t.s2Start, { opacity: 0, transform: `rotateX(${-foldAngle}deg)`, "--fold-crease": String(creaseShading) }],
+          [charStart, { opacity: 0, transform: `rotateX(${-foldAngle}deg)`, "--fold-crease": String(creaseShading) }, E.power3Out],
+          [charEnd, { opacity: 1, transform: "rotateX(0deg)", "--fold-crease": "0" }],
+        ];
+
+        if (isFirstC) {
+          frames.push(
+            [t.bridgeStart - 1, { opacity: 1, transform: "rotateX(0deg) scale(1)", "--fold-crease": "0" }],
+            [t.bridgeStart, { opacity: 0, transform: "rotateX(0deg) scale(1)", "--fold-crease": "0" }]
+          );
+        } else {
+          frames.push(
+            [t.s2UnfoldEnd, { opacity: 1, transform: "rotateX(0deg) scale(1)", "--fold-crease": "0" }, "ease-out"],
+            [t.s2FadeOutEnd, { opacity: 0, transform: "rotateX(0deg) scale(0.92)", "--fold-crease": "0" }]
+          );
+        }
+        track(piece, frames);
+      });
+
+      // 跨镜桥梁：C 纯水平向左平移，Y 轴保持不动
+      const scaleStr = toScale.toFixed(3);
+      const xStr = toX.toFixed(2);
+      const midX = (toX * 0.18).toFixed(2);
+      const scaleBlendAt = t.bridgeStart + Math.round((t.bridgeArrive - t.bridgeStart) * 0.22);
+      track($("letterBridge"), [
+        [t.bridgeStart - 1, { opacity: 0, transform: "translate3d(0px, 0px, 0) scale(1)" }],
+        [t.bridgeStart, { opacity: 1, transform: "translate3d(0px, 0px, 0) scale(1)" }, "cubic-bezier(0.33, 0, 0.2, 1)"],
+        [scaleBlendAt, { opacity: 1, transform: `translate3d(${midX}px, 0px, 0) scale(${scaleStr})` }, "cubic-bezier(0.4, 0, 0.2, 1)"],
+        [t.bridgeArrive, { opacity: 1, transform: `translate3d(${xStr}px, 0px, 0) scale(${scaleStr})` }, "ease-out"],
+        [t.bridgeEnd, { opacity: 0, transform: `translate3d(${xStr}px, 0px, 0) scale(${scaleStr})` }],
+      ]);
+
+      // 镜头 3：Creating Lasting Ecosystem 逐词弹入与动态居中
+      track($("thirdScene"), [
+        [t.s3Start - 1, { opacity: 0 }],
+        [t.s3Start, { opacity: 1 }],
+        [duration, { opacity: 1 }],
+      ]);
+
+      track($("s3FirstC"), [
+        [t.s3Start, { opacity: 0 }],
+        [t.bridgeEnd, { opacity: 1 }],
+        [duration, { opacity: 1 }],
+      ]);
+
+      track($("s3Line"), [
+        [t.s3Start, { transform: `translate3d(${dx0.toFixed(2)}px, 0, 0)` }],
+        [t.s3Step1Start, { transform: `translate3d(${dx0.toFixed(2)}px, 0, 0)` }, E.snapIn],
+        [t.s3Step1End, { transform: `translate3d(${dx1.toFixed(2)}px, 0, 0)` }, E.snapIn],
+        [t.s3Step2End, { transform: "translate3d(0px, 0, 0)" }],
+        [duration, { transform: "translate3d(0px, 0, 0)" }],
+      ]);
+
+      track($("s3Rest"), [
+        [t.s3Start, { opacity: 0, transform: "translate3d(-0.5cqw, 0, 0) scale(0.92)" }, E.enter],
+        [t.s3CreatingInEnd, { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" }],
+      ]);
+
+      track($("s3W1"), [
+        [t.s3Step1Start, { opacity: 0, transform: "translate3d(2.4cqw, 0, 0) scale(0.9)" }, E.snapIn],
+        [t.s3Step1End, { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" }],
+      ]);
+
+      track($("s3W2"), [
+        [t.s3Step2Start, { opacity: 0, transform: "translate3d(2.4cqw, 0, 0) scale(0.9)" }, E.snapIn],
+        [t.s3Step2End, { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" }],
+      ]);
+    }
+
+    slider.max = String(duration);
+
+    function render(ms) {
+      playhead = Math.min(duration, Math.max(0, ms));
+      for (const { animation, start } of cue) animation.currentTime = playhead - start;
+      slider.value = String(Math.round(playhead));
+      slider.style.setProperty("--progress", `${(playhead / duration) * 100}%`);
+      readout.textContent = `${(playhead / 1000).toFixed(2)}s / ${(duration / 1000).toFixed(2)}s`;
+    }
+
+    function syncButton() {
+      const label = playing ? "暂停" : "播放";
+      button.setAttribute("aria-label", label + "动画");
+      button.removeAttribute("aria-pressed");
+      button.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true">${playing
+        ? '<rect x="3" y="2.5" width="3.5" height="11" rx="1"/><rect x="9.5" y="2.5" width="3.5" height="11" rx="1"/>'
+        : '<path d="M4 2 L14 8 L4 14 Z"/>'}</svg><span>${label}</span>`;
+      document.body.classList.toggle("is-paused", !playing);
+    }
+
+    function pause() {
+      playing = false;
+      if (raf !== null) cancelAnimationFrame(raf);
+      raf = null;
+      syncButton();
+    }
+
+    // 通知父页面动画已自然播完（主页前置开场契约）
     function notifyParent(reason) {
       try {
         if (window.parent && window.parent !== window) {
           window.parent.postMessage({ type: "viridance:motion-intro", reason: reason }, "*");
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) {}
     }
 
-    // 初始化
-    applyTheme();
-    const sceneRefs = buildScenes();
+    function tick(now) {
+      if (!playing) return;
+      let elapsed = now - origin;
+      if (elapsed >= duration && !CONFIG.loop) {
+        render(duration);
+        pause();
+        window.setTimeout(function () { notifyParent("complete"); }, 80);
+        return;
+      }
+      const cycle = duration + CONFIG.loopPause;
+      if (elapsed >= cycle) {
+        origin += Math.floor(elapsed / cycle) * cycle;
+        elapsed = now - origin;
+      }
+      render(elapsed);
+      raf = requestAnimationFrame(tick);
+    }
 
-    // 绑定按钮点击与空格键快捷暂停/播放
-    if (playPauseBtn) {
-      playPauseBtn.addEventListener("click", () => {
-        togglePlayPause(sceneRefs);
-        playPauseBtn.blur();
+    function play(restartAtEnd = true) {
+      if (playing || (reduce.matches && !forceMotion)) return;
+      if (restartAtEnd && playhead >= duration) render(0);
+      origin = performance.now() - playhead;
+      playing = true;
+      syncButton();
+      raf = requestAnimationFrame(tick);
+    }
+
+    function toggle() {
+      if (playing) pause();
+      else play();
+    }
+
+    button.addEventListener("click", toggle);
+
+    slider.addEventListener("pointerdown", () => {
+      scrubbing = true;
+      resumeAfterScrub = playing;
+      if (playing) pause();
+    });
+    slider.addEventListener("input", () => {
+      render(Number(slider.value));
+      if (playing) origin = performance.now() - playhead;
+    });
+
+    function endScrub() {
+      if (!scrubbing) return;
+      scrubbing = false;
+      if (resumeAfterScrub) play(false);
+    }
+    window.addEventListener("pointerup", endScrub);
+    window.addEventListener("pointercancel", endScrub);
+
+    reduce.addEventListener("change", () => {
+      if (reduce.matches && !forceMotion) pause();
+      else { buildTimeline(); render(0); play(); }
+    });
+
+    // 舞台尺寸变化（窗口缩放 / 旋转）时重新测量几何并重建时间轴
+    let lastStageW = 0;
+    let lastStageH = 0;
+    let rebuildRaf = null;
+    new ResizeObserver(() => {
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      if (Math.abs(rect.width - lastStageW) < 0.5 && Math.abs(rect.height - lastStageH) < 0.5) return;
+      lastStageW = rect.width;
+      lastStageH = rect.height;
+      if (rebuildRaf !== null) cancelAnimationFrame(rebuildRaf);
+      rebuildRaf = requestAnimationFrame(() => {
+        rebuildRaf = null;
+        buildTimeline();
+        render(playhead);
       });
-    }
+    }).observe(stage);
 
-    // 绑定进度条拖拽与点击定位（支持桌面端鼠标与移动端触控）
-    if (progressSlider) {
-      const beginScrub = () => {
-        if (isScrubbing) return;
-        isScrubbing = true;
-        wasPlayingBeforeScrub = !isPaused;
-        if (!isPaused) pauseTimeline();
-      };
+    buildTimeline();
+    // 字体就绪后字形宽度会变化，需重新测量首字母 C 的坐标
+    document.fonts?.ready.then(() => {
+      buildTimeline();
+      render(playhead);
+    });
 
-      const endScrub = () => {
-        if (!isScrubbing) return;
-        isScrubbing = false;
-        if (wasPlayingBeforeScrub) {
-          resumeTimeline(sceneRefs);
-        }
-      };
-
-      progressSlider.addEventListener("pointerdown", beginScrub);
-      progressSlider.addEventListener("input", (event) => {
-        if (!isScrubbing) beginScrub();
-        seekTo(sceneRefs, Number(event.target.value));
-      });
-      progressSlider.addEventListener("change", endScrub);
-      window.addEventListener("pointerup", endScrub);
-      window.addEventListener("pointercancel", endScrub);
-    }
-
-    // 嵌入主页作为前置开场时，父页面统一处理跳过；此处不再拦截空格键
-    // （保留独立预览的播放/暂停由控制栏按钮完成——控制栏已移除）
-
-    if (CONFIG.playback.autoplay) {
-      requestAnimationFrame(() => playTimeline(sceneRefs));
-    }
+    render(0);
+    syncButton();
+    play();
   </script>
 </body>
 </html>
