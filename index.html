@@ -4467,7 +4467,8 @@ html{scroll-behavior:smooth;}
 .vd :is(.foot .footer-socials,#p11 .contact-floor-socials){position:relative;flex-wrap:wrap;gap:8px;}
 .vd :is(.foot .footer-socials,#p11 .contact-floor-socials) svg{display:block;width:18px;height:18px;fill:currentColor;}
 .vd :is(.foot,#p11 .contact-floor--social) .contact-social .soc{display:grid;place-items:center;width:44px;height:44px;border:0;padding:0;cursor:pointer;}
-.vd :is(.foot,#p11 .contact-floor--social) .contact-social .soc:is(:hover,[aria-pressed="true"]){background:var(--forest-600);color:#fff;}
+.vd .foot .contact-social .soc:hover{background:var(--forest-600);color:#fff;}
+.vd #p11 .contact-floor--social .contact-social .soc:is(:hover,[aria-pressed="true"]){background:var(--forest-600);color:#fff;}
 .vd :is(.foot,#p11 .contact-floor--social) .contact-social{position:relative;}
 
  
@@ -4572,8 +4573,10 @@ document.querySelectorAll('.vd .foot .footer-socials, .vd #p11 .contact-floor-so
   const showcaseDesc = showcase && showcase.querySelector('.contact-qr-showcase__desc');
 
   function select(button) {
+    /* 页脚没有二维码展示区：不写 aria-pressed（否则首个图标会常驻绿色填充），只保留 hover 高亮 */
+    if (!showcase) return;
     buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
-    if (!showcase || !showcaseImg) return;
+    if (!showcaseImg) return;
     const src = button.getAttribute('data-qr');
     if (src) {
       showcaseImg.src = src;
