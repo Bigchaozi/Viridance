@@ -4983,12 +4983,13 @@ document.querySelectorAll('.vd .foot .footer-socials, .vd #p11 .contact-floor-so
 <style data-page-node-id="cultureCardPhoto">
 /* Corporate Culture 三卡配图：图片以绝对定位贴右，左侧用 mask 渐隐与卡片底色融合。
    放在全部既有 style 之后，用 .vd #about-culture 提高优先级，避免波及 services 页的 .principle-grid 卡片。 */
-.vd #about-culture .about-culture-grid article{position:relative;isolation:isolate;min-height:236px;padding-right:40%;}
-.vd #about-culture .about-culture-card__photo{position:absolute;inset-block:0;right:0;display:block;width:58%;height:100%;object-fit:cover;object-position:50% 50%;z-index:0;pointer-events:none;transition:filter var(--motion-ui),opacity var(--motion-ui);-webkit-mask-image:linear-gradient(90deg,transparent 0,transparent 45%,rgba(0,0,0,.10) 59%,rgba(0,0,0,.58) 74%,rgba(0,0,0,.78) 88%,rgba(0,0,0,.80) 100%);mask-image:linear-gradient(90deg,transparent 0,transparent 45%,rgba(0,0,0,.10) 59%,rgba(0,0,0,.58) 74%,rgba(0,0,0,.78) 88%,rgba(0,0,0,.80) 100%);}
+.vd #about-culture .about-culture-grid article{position:relative;isolation:isolate;min-height:236px;padding-right:47.5%;}
+.vd #about-culture .about-culture-card__photo{position:absolute;inset-block:0;right:0;display:block;width:58%;height:100%;object-fit:cover;object-position:50% 50%;z-index:0;pointer-events:none;transition:filter var(--motion-ui),opacity var(--motion-ui);-webkit-mask-image:linear-gradient(90deg,transparent 0,transparent 22%,rgba(0,0,0,.18) 45%,rgba(0,0,0,.55) 70%,rgba(0,0,0,.78) 88%,rgba(0,0,0,.80) 100%);mask-image:linear-gradient(90deg,transparent 0,transparent 22%,rgba(0,0,0,.18) 45%,rgba(0,0,0,.55) 70%,rgba(0,0,0,.78) 88%,rgba(0,0,0,.80) 100%);}
 .vd #about-culture .about-culture-grid article>:not(.about-culture-card__photo){position:relative;z-index:1;}
 .vd #about-culture .about-culture-grid article:hover>.about-culture-card__photo,.vd #about-culture .about-culture-grid article:focus-within>.about-culture-card__photo{filter:saturate(.9) brightness(1.02);opacity:.94;}
+@media(min-width:1280px) and (max-width:1360px){.vd #about-culture .about-culture-grid article{padding-right:44%;}}
 @media(min-width:768px) and (max-width:1279px){.vd #about-culture .about-culture-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:767px){.vd #about-culture .about-culture-grid article{padding-right:calc(38% + 22px);min-height:196px;}.vd #about-culture .about-culture-card__photo{width:46%;}}
+@media(max-width:767px){.vd #about-culture .about-culture-grid article{padding-right:46%;min-height:196px;}.vd #about-culture .about-culture-card__photo{width:50%;}}
 @media(max-width:359px){.vd #about-culture .about-culture-card__photo{display:none;}.vd #about-culture .about-culture-grid article{padding-right:22px;}}
 @media(forced-colors:active){.vd #about-culture .about-culture-card__photo{display:none;}.vd #about-culture .about-culture-grid article{padding-right:30px;}}
 @supports not ((-webkit-mask-image:linear-gradient(#000,#000)) or (mask-image:linear-gradient(#000,#000))){.vd #about-culture .about-culture-card__photo{display:none;}.vd #about-culture .about-culture-grid article{padding-right:30px;}}
