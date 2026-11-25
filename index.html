@@ -1796,6 +1796,9 @@ html{scroll-behavior:smooth;}
 .vd .article-image img{width:100%; aspect-ratio:16/9; object-fit:cover;}
 .vd .article-body{max-width:720px; margin:44px auto; font-size:18px; line-height:1.8; color:#42514A;}
 .vd .article-body p{margin:0 0 24px;}
+.vd .article-body .article-inline-figure{margin:34px 0;}
+.vd .article-body .article-inline-figure img{display:block;width:100%;border-radius:var(--radius-image);}
+.vd .article-body .article-inline-figure figcaption{margin-top:10px;font-size:13px;color:#6F7E75;text-align:center;}
 .vd .article-body blockquote{margin:34px 0; padding:8px 0 8px 24px; border-left:3px solid #90E967; color:#14231C; font-size:24px; line-height:1.4;}
 .vd .article-return{max-width:720px; margin:0 auto 70px;}
 .vd .contact-intro{padding:105px 0 70px; background:#F3F7F1;}
@@ -1897,14 +1900,17 @@ html{scroll-behavior:smooth;}
   var articles = {
     'sample-1':{category:'Company News', title:'Viridance Brings Mine Slope Stability and Effective Reclamation Open Course to University of Zimbabwe', dek:'China–Zimbabwe industry–academia collaboration advances sustainable mine governance and ecological restoration', image:'assets/images/news-course-uzimbabwe.jpg', body:[
       'HARARE, 23 November 2026 — Moving from “extract and exit” to “long-term stewardship,” mine slope safety management and effective land reclamation have become central challenges in sustainable mine governance in Zimbabwe. On 23 November, Viridance — the Zimbabwe-based wholly owned subsidiary of Chinese ecological restoration company Jinzhou Lvmai — led a team headed by General Manager Huang Zhou to the University of Zimbabwe (UZ) for an open course titled Mine Slope Stability and Effective Reclamation. The session established a platform for industry–academia–research exchange between China and Zimbabwe, applying engineering expertise to local mine governance challenges.',
+      {img:'assets/images/uz-course-slide.jpg', alt:'Course slide: Mine Slope Stability and Effective Reclamation, University of Zimbabwe', caption:'Open course cover slide — University of Zimbabwe, 23 November 2026.'},
       'Dr. Charles Chavhunduka, Dean of the Faculty of Engineering and the Built Environment at UZ, attended the technical session together with faculty and student representatives.',
       'During the course, the Viridance team systematically presented on identifying mine slope instability risks, stability analysis methods, slope reinforcement and protection schemes, landform reshaping of closed mine sites, soil improvement, re-establishment of native vegetation, and long-term monitoring of reclamation outcomes. Drawing on mature Chinese mining engineering cases, the team explained an integrated pathway for slope treatment and ecological reclamation. They also compared the implementation cost, long-term performance and compliance requirements of different reclamation models against Zimbabwe’s geological and climatic conditions.',
+      {img:'assets/images/uz-course-classroom.jpg', alt:'Viridance team delivering the open course to students at the University of Zimbabwe', caption:'Viridance team and UZ students during the technical session.'},
       'An interactive discussion followed. Students and faculty raised questions on landslide risks in local mining areas, reuse of reclaimed land, EIA/ESIA compliance requirements, adaptation of native species, and community land rights. Both sides focused on how to localize China’s mature slope treatment and high-efficiency reclamation techniques to develop mine restoration solutions that are safe, controllable, low-cost, implementable and sustainable.',
       'The open course marks a key step in deepening industry–university cooperation. Viridance and the University of Zimbabwe have previously held multiple rounds of discussions on joint research, academic publication, training of local mining environmental protection talent, and a framework cooperation agreement. The technical exchange further consolidates that foundation, with both parties continuing to advance:',
       '• Joint research projects on mine slope stability and reclamation technologies, helping improve Zimbabwe’s mine environmental governance standards system;',
       '• An internship and training platform to cultivate local technical talent in slope engineering and ecological reclamation;',
       '• An integrated demonstration project of slope treatment and ecological reclamation, including field validation of localized technologies;',
       '• A regular mechanism for academic exchange, open courses and technical seminars.',
+      {img:'assets/images/uz-course-audience.jpg', alt:'Students and faculty attending the open course at the University of Zimbabwe', caption:'Faculty and students attending the open course.'},
       'Deepening the Green Silk Road through two-way engagement, Viridance will continue to strengthen its industry–university collaboration with the University of Zimbabwe. Through a series of technical sessions on core themes such as Mine Slope Stability and Effective Reclamation, the company will advance industry–academia–research integration to support Zimbabwe’s green and safe mining transformation — writing a solid Zimbabwe chapter in green ecological cooperation under the Belt and Road Initiative.'
     ]},
     'sample-2':{category:'Project Updates', title:'Project update headline placeholder', dek:'A project summary will be added after the project and publication details are confirmed.'},
@@ -1960,7 +1966,16 @@ html{scroll-behavior:smooth;}
     if (bodyEl) {
       if (item.body) {
         bodyEl.innerHTML = '';
-        item.body.forEach(function (para) { var p = document.createElement('p'); p.textContent = para; bodyEl.appendChild(p); });
+        item.body.forEach(function (entry) {
+          if (typeof entry === 'string') { var p = document.createElement('p'); p.textContent = entry; bodyEl.appendChild(p); }
+          else if (entry && entry.img) {
+            var fig = document.createElement('figure'); fig.className = 'article-inline-figure';
+            var im = document.createElement('img'); im.src = entry.img; im.alt = entry.alt || ''; im.loading = 'lazy';
+            fig.appendChild(im);
+            if (entry.caption) { var cap = document.createElement('figcaption'); cap.textContent = entry.caption; fig.appendChild(cap); }
+            bodyEl.appendChild(fig);
+          }
+        });
       } else {
         bodyEl.innerHTML = '<p>This article page is a layout preview. Replace this sample text with a reviewed article before publication.</p><p>No project name, result, permit status, production figure or client statement is represented here as fact.</p><blockquote>Approved quotation placeholder</blockquote><p>Additional article content can be added after the source material and publication date are confirmed.</p>';
       }
