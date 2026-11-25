@@ -6,6 +6,8 @@
 <meta data-page-node-id="dQBcqtnGwck1qdLsb8sKp4" name="description" content="Viridance restores mine sites to lasting natural ecosystems across Africa — EIA &amp; compliance consultancy, ecological restoration design, construction and closure monitoring.">
 <!-- TODO(SEO): 上线时补充 canonical 与 Open Graph 标签（https://你的域名） -->
 <link data-page-node-id="YOCu1TKDqdCHZ3TS7vI4qh" rel="icon" type="image/png" href="assets/images/favicon-leaf.png">
+<!-- CMS 媒体前缀：后台上传的 /uploads/* 图片从这里读取。本地指向后端，上线改成 CDN 域名。 -->
+<script>window.VD_MEDIA_BASE = window.VD_MEDIA_BASE || 'http://127.0.0.1:8080';</script>
 <style data-page-node-id="oEoFMFlWvQqyb1LNU2961d" data-pnid-children="J1dIC5zfBcghGFCQwqNlP0">
 /* ============================================================
    Viridance Visual Design System v1.1-Light  ·  tokens
@@ -1939,7 +1941,7 @@ html{scroll-behavior:smooth;}
 
   function setService(id) {
     var item = serviceItems.find(function (s) { return s.id === id; }) || serviceItems[0];
-    document.getElementById('service-long-copy').textContent = item.detail;
+    document.getElementById('service-long-copy').innerHTML = item.detail || '';
     document.getElementById('service-subhead').textContent = item.title;
     document.getElementById('service-crumb').textContent = item.title;
     document.getElementById('service-tagline').textContent = item.tagline;
@@ -1968,7 +1970,10 @@ html{scroll-behavior:smooth;}
     if (figcap) figcap.textContent = item.image ? 'Open course cover slide — University of Zimbabwe, 23 November 2026.' : '';
     var bodyEl = document.querySelector('#p10 .article-body');
     if (bodyEl) {
-      if (item.body) {
+      if (typeof item.body === 'string') {
+        // 后台富文本存的是 HTML，直接渲染
+        bodyEl.innerHTML = item.body;
+      } else if (item.body) {
         bodyEl.innerHTML = '';
         item.body.forEach(function (entry) {
           if (typeof entry === 'string') { var p = document.createElement('p'); p.textContent = entry; bodyEl.appendChild(p); }
@@ -1991,7 +1996,15 @@ html{scroll-behavior:smooth;}
     document.getElementById('leader-name').textContent = item.name;
     document.getElementById('leader-title').textContent = item.title;
     var photo = document.getElementById('leader-photo');
-    photo.className = 'leader-profile__photo about-member-photo portrait-' + item.portrait;
+    photo.className = 'leader-profile__photo about-member-photo portrait-' + (item.portrait || 1);
+    // 后台可上传头像：有 avatar 时用图片覆盖，没有则回退到内置 portrait 编号映射
+    if (item.avatar) {
+      photo.style.backgroundImage = 'url("' + item.avatar + '")';
+      photo.style.backgroundSize = 'cover';
+      photo.style.backgroundPosition = 'center';
+    } else {
+      photo.style.backgroundImage = '';
+    }
     photo.setAttribute('aria-label','Portrait photograph of ' + item.name);
     document.querySelector('#p12 .leader-profile__note').hidden = Boolean(item.supplied);
     var bio = document.getElementById('leader-bio');
@@ -2167,6 +2180,206 @@ html{scroll-behavior:smooth;}
   window.addEventListener('popstate',fromHash);
   window.addEventListener('hashchange',fromHash);
   fromHash();
+
+  /* ============================================================
+     CMS 内容注入：读取后台发布生成的 content.json，
+     覆盖数据并重建列表，让后台修改无需改页面代码即可生效。
+     ============================================================ */
+  function vdMedia(url) {
+    if (!url) return '';
+    if (/^(https?:|data:|\/\/)/.test(url)) return url;
+    if (url.indexOf('/uploads/') === 0) return (window.VD_MEDIA_BASE || '') + url;
+    return url; /* assets/images/* 保持门户相对路径 */
+  }
+
+  function vdDate(value) {
+    if (!value) return '';
+    var m = String(value).match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);
+    if (!m) return String(value);
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var month = months[parseInt(m[2], 10) - 1] || '';
+    return (m[3] ? parseInt(m[3], 10) + ' ' : '') + month + ' ' + m[1];
+  }
+
+  function vdPad(n) { return n < 10 ? '0' + n : String(n); }
+
+  function vdSetText(parent, selector, value) {
+    var node = parent.querySelector(selector);
+    if (node) node.textContent = value == null ? '' : String(value);
+  }
+
+  /* 服务列表卡片：克隆现有卡片为模板，保留样式与滚动动画结构 */
+  function vdRenderServices(list) {
+    var grid = document.getElementById('service-grid');
+    if (!grid) return;
+    var tpl = grid.querySelector('.service-route-card');
+    if (!tpl) return;
+    var frag = document.createDocumentFragment();
+    list.forEach(function (s, i) {
+      var node = tpl.cloneNode(true);
+      var img = node.querySelector('.service-z-row__media img');
+      if (img) { img.src = vdMedia(s.image || s.detailImage); img.alt = s.title || ''; }
+      vdSetText(node, '.service-route-card__number', vdPad(i + 1));
+      vdSetText(node, 'h3', s.title);
+      vdSetText(node, 'p', s.tagline);
+      var link = node.querySelector('a[data-route="service"]');
+      if (link) {
+        link.setAttribute('href', '#service/' + s.slug);
+        link.setAttribute('data-service', s.slug);
+      }
+      frag.appendChild(node);
+    });
+    grid.innerHTML = '';
+    grid.appendChild(frag);
+  }
+
+  /* 新闻列表卡片：第一张用 featured 模板，其余用 row 模板 */
+  function vdRenderArticles(list) {
+    var grid = document.getElementById('news-route-grid');
+    if (!grid) return;
+    var tplFeatured = grid.querySelector('.news-route-card--featured') || grid.querySelector('.news-route-card');
+    var tplRow = grid.querySelector('.news-route-card--row') || tplFeatured;
+    if (!tplFeatured) return;
+    var frag = document.createDocumentFragment();
+    list.forEach(function (a, i) {
+      var node = (i === 0 ? tplFeatured : tplRow).cloneNode(true);
+      node.setAttribute('href', '#article/' + a.slug);
+      node.setAttribute('data-article', a.slug);
+      node.setAttribute('data-date', String(a.date || '').slice(0, 7));
+      node.setAttribute('data-category', a.category || '');
+      var imageWrap = node.querySelector('.news-route-card__image');
+      var img = imageWrap ? imageWrap.querySelector('img') : null;
+      if (img) {
+        if (a.image) {
+          img.src = vdMedia(a.image);
+          img.alt = a.title || '';
+          imageWrap.style.display = '';
+        } else if (imageWrap) {
+          imageWrap.style.display = 'none';
+        }
+      }
+      vdSetText(node, '.news-route-card__tags span', a.category);
+      var time = node.querySelector('.news-route-card__tags time');
+      if (time) time.textContent = vdDate(a.date);
+      vdSetText(node, 'h2', a.title);
+      vdSetText(node, '.news-route-card__body p', a.dek);
+      frag.appendChild(node);
+    });
+    grid.innerHTML = '';
+    grid.appendChild(frag);
+    var empty = document.getElementById('news-empty');
+    if (empty) empty.hidden = true;
+  }
+
+  /* 团队卡片：头像优先用后台上传图，没有则回退到 portrait 编号映射 */
+  function vdRenderMembers(list) {
+    var section = document.getElementById('about-team');
+    if (!section) return;
+    var cards = section.querySelectorAll('.about-member-card');
+    if (!cards.length) return;
+    var tpl = cards[0];
+    var parent = tpl.parentNode;
+    var frag = document.createDocumentFragment();
+    list.forEach(function (m) {
+      var node = tpl.cloneNode(true);
+      node.setAttribute('href', '#leader/' + m.slug);
+      node.setAttribute('data-leader', m.slug);
+      node.setAttribute('aria-label', 'View profile of ' + (m.name || ''));
+      var photo = node.querySelector('.about-member-photo');
+      if (photo) {
+        photo.className = photo.className.replace(/\s*portrait-\d+/g, '');
+        if (m.avatar) {
+          photo.style.backgroundImage = 'url("' + vdMedia(m.avatar) + '")';
+          photo.style.backgroundSize = 'cover';
+          photo.style.backgroundPosition = 'center';
+        } else {
+          photo.style.backgroundImage = '';
+          photo.className += ' portrait-' + (m.portrait || 1);
+        }
+      }
+      /* 背面资历文字属于模板成员，避免张冠李戴 */
+      var quals = node.querySelector('.about-member-qualifications');
+      if (quals) quals.innerHTML = '';
+      vdSetText(node, '.about-member-meta strong', m.name);
+      vdSetText(node, '.about-member-meta small', m.title);
+      frag.appendChild(node);
+    });
+    Array.prototype.slice.call(cards).forEach(function (c) {
+      if (c.parentNode === parent) parent.removeChild(c);
+    });
+    parent.appendChild(frag);
+  }
+
+  /* 用后台数据覆盖详情页数据源 */
+  function vdApplyData(content) {
+    if (Array.isArray(content.services) && content.services.length) {
+      serviceItems = content.services.map(function (s, i) {
+        return {
+          id: s.slug,
+          n: vdPad(i + 1),
+          title: s.title || '',
+          tagline: s.tagline || '',
+          detail: s.detail || '',
+          image: vdMedia(s.image || s.detailImage)
+        };
+      });
+    }
+    if (Array.isArray(content.articles) && content.articles.length) {
+      articles = {};
+      content.articles.forEach(function (a) {
+        articles[a.slug] = {
+          category: a.category || '',
+          title: a.title || '',
+          dek: a.dek || '',
+          date: a.date || '',
+          image: vdMedia(a.image),
+          body: a.body || ''
+        };
+      });
+    }
+    if (Array.isArray(content.members) && content.members.length) {
+      leaders = {};
+      content.members.forEach(function (m) {
+        var bio = [];
+        try { bio = typeof m.bio === 'string' ? JSON.parse(m.bio) : (m.bio || []); } catch (e) { bio = []; }
+        leaders[m.slug] = {
+          name: m.name || '',
+          title: m.title || '',
+          portrait: m.portrait || 1,
+          avatar: vdMedia(m.avatar),
+          bio: bio,
+          supplied: !!m.supplied
+        };
+      });
+    }
+    if (content.settingsMap) {
+      if (content.settingsMap.site_title) document.title = content.settingsMap.site_title;
+      var desc = document.querySelector('meta[name="description"]');
+      if (desc && content.settingsMap.meta_description) desc.setAttribute('content', content.settingsMap.meta_description);
+    }
+    if (Array.isArray(content.slides) && content.slides.length && typeof window.__vdSetHeroSlides === 'function') {
+      window.__vdSetHeroSlides(content.slides.map(function (s) {
+        return { image: vdMedia(s.image), preview: vdMedia(s.preview), kicker: s.kicker || '' };
+      }));
+    }
+  }
+
+  function vdLoadContent() {
+    if (typeof fetch !== 'function') return;
+    fetch('content.json', { cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (content) {
+        if (!content) return;
+        vdApplyData(content);
+        if (Array.isArray(content.services) && content.services.length) vdRenderServices(content.services);
+        if (Array.isArray(content.articles) && content.articles.length) vdRenderArticles(content.articles);
+        if (Array.isArray(content.members) && content.members.length) vdRenderMembers(content.members);
+        fromHash(); /* 用新数据重渲染当前路由 */
+        document.dispatchEvent(new CustomEvent('vd:cms-ready'));
+      })
+      .catch(function () { /* 没有 content.json 时保持静态内容 */ });
+  }
+  vdLoadContent();
 })();
 </script>
 <style data-page-node-id="02c4l8AEKCNOd4D2HAwCVr" data-pnid-children="lguJvEw0dICpBqpSDFOzyU" id="inner-page-visual-alignment">
@@ -3877,6 +4090,26 @@ html{scroll-behavior:smooth;}
     indicatorsNode.appendChild(dot);
   });
 
+  /* CMS：后台发布后动态替换轮播图与指示点，无需刷新页面结构 */
+  window.__vdSetHeroSlides=function(list){
+    if(!list||!list.length){return;}
+    slides=list;current=0;transitioning=false;
+    slices.forEach(function(slice){
+      slice.current.src=slides[0].image;
+      slice.next.src=slides.length>1?slides[1].image:slides[0].image;
+    });
+    indicatorsNode.innerHTML='';
+    slides.forEach(function(slide,index){
+      var dot=document.createElement('button');
+      dot.type='button';dot.className='vzx-indicator'+(index===0?' is-active':'');
+      dot.setAttribute('aria-label','Show hero slide '+String(index+1));
+      dot.addEventListener('click',function(){goTo(index);});
+      indicatorsNode.appendChild(dot);
+    });
+    if(kickerNode){kickerNode.textContent=slides[0].kicker||'';}
+    if(previewNode&&slides[0].preview){previewNode.src=slides[0].preview;}
+  };
+
   function updateIndicators(){
     Array.prototype.forEach.call(indicatorsNode.children,function(dot,index){dot.classList.toggle('is-active',index===current);});
   }
@@ -4729,7 +4962,7 @@ document.querySelectorAll('.vd .foot .footer-socials, .vd #p11 .contact-floor-so
 
 <style data-page-node-id="jFtdtkW79VDwoKMjWl3opm" data-pnid-children="SRUtvUrI05C6P7aOz9iZt5">
 /* 按钮在气泡模块与下方割断线之间垂直居中：上间距 = 容器 padding-bottom + 下一节 padding-top(56px) */
-.vd #p7 .service-overview-action{display:flex;justify-content:center;margin-top:calc(clamp(28px,4vw,56px) + 56px);}
+.vd #p7 .service-overview-action{display:flex;justify-content:center;margin-top:calc(clamp(28px,4vw,56px) + 76px);}
 .vd #p7 .service-overview-action .btn-secondary{
   background:transparent;
   border-color:var(--line);
