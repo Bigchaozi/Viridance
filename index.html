@@ -5322,7 +5322,7 @@ const locations = {
 }
 
 .vd-toast-wrap {
-  position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%);
+  position: fixed; left: 50%; top: clamp(84px, 12vh, 140px); transform: translateX(-50%);
   z-index: 9990; display: flex; flex-direction: column; gap: 10px;
   pointer-events: none;
 }
@@ -5348,12 +5348,12 @@ const locations = {
 .vd-toast.vd-in { animation: vdToastPop .34s cubic-bezier(.34, 1.56, .64, 1) both; }
 .vd-toast.vd-out { animation: vdToastOut .24s ease both; }
 @keyframes vdToastPop {
-  0% { opacity: 0; transform: translateY(18px) scale(.88); }
-  60% { opacity: 1; transform: translateY(-3px) scale(1.03); }
+  0% { opacity: 0; transform: translateY(-18px) scale(.88); }
+  60% { opacity: 1; transform: translateY(3px) scale(1.03); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes vdToastOut {
-  to { opacity: 0; transform: translateY(12px) scale(.96); }
+  to { opacity: 0; transform: translateY(-12px) scale(.96); }
 }
 </style>
 </body></html>
